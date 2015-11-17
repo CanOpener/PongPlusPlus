@@ -6,7 +6,7 @@ TCP is a connection based protocol with no support for messages. Therefor a meth
 of splitting the data from the connection into individual messages of different types
 needs to be created.
 
-### Prefixing messages with message length
+##### Prefixing messages with message length
 Each individual message sent to and from the server needs to be prefixed by a 2 Byte (16bit) unsigned
 integer which describes how many bytes the following message contains. The server and client will then know
 how many of the following bytes to make the message. once that many bytes has been read and a message is composed :
@@ -161,6 +161,85 @@ Sent to the Server when a client wishes to leave a game. This can only be sent i
 #### Payload
 ```
 1 byte      : uint      : Message type
+```
+
+---
+
+## Gameplay Messages
+A game is composed of 2 players and a ball. The game board is 500 units in height and 750 units in length. Each player has a height of 125 units and no width and moves only vertically. Each player is placed 10 units before the edge of their side of the game board. The ball is 25x25 units. As the ball moves if the player moves into it's way the ball bounces off the player and starts heading towards the other players side. if the player does not get in it's way and the ball moves off through their side of the board, the other player wins that round. Each game has 10 rounds.
+
+player positions are relative to the bottom unit of the player. i.e if the player position is 0 :
+he is at the bottom of the game board. and if the player position is 375 he is at the top of the game
+board (375 + 125 = 500)
+
+ball position = mathematical graph positions (x and y)
+
+---
+
+### Start Game
+#### Server --> Client
+#### Message type: 11
+#### Description
+When two clients are in a lobby a game can start. The Server sends each client in the game
+a start game message.
+#### Payload
+```
+1 byte      : uint      : Message type
+1 byte      : boolean   : your side of game board (1 = right, 0 = left)
+2 bytes     : uint      : your position (relative to the bottom unit of the player)
+2 bytes     : uint      : other player position (relative to the bottom unit of the player)
+2 bytes     : uint      : ball x position (relative to left of ball)
+2 bytes     : uint      : ball y position (relative to bottom of ball)
+var bytes   : string    : Other player alias
+var bytes   : string    : Game id
+var bytes   : string    : Game name
+```
+
+---
+
+### State Update
+#### Server --> Client
+#### Message type: 12
+#### Description
+Message sent from the server to the clients in a game 60 times a second telling them the status of the objects in the game.
+#### Payload
+```
+1 byte      : uint      : Message type
+2 bytes     : uint      : other player position (relative to the bottom unit of the player)
+2 bytes     : uint      : ball x position (relative to left of ball)
+2 bytes     : uint      : ball y position (relative to bottom of ball)
+```
+
+---
+
+### Round Update
+#### Server --> Client
+#### Message type: 13
+#### Description
+Sent to the players when the round is over. The ball position is given in this one because the ball resets when the round is over. There may be a second of waiting time
+before the ball begins moving again to give players time to recover.
+#### Payload
+```
+1 byte      : uint      : Message type
+1 bytes     : uint      : your score
+1 bytes     : uint      : other player score
+2 bytes     : uint      : ball x position (relative to left of ball)
+2 bytes     : uint      : ball y position (relative to bottom of ball)
+```
+
+---
+
+### Game Over
+#### Server --> Client
+#### Message type: 14
+#### Description
+Sent to the players when the game has finished.
+#### Payload
+```
+1 byte      : uint      : Message type
+1 bytes     : uint      : your score
+1 bytes     : uint      : other player score
+1 bytes     : uint      : game state (0 = your victory, 1 = other player's victory, 2 = draw)
 ```
 
 ---
