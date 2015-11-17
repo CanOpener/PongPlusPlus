@@ -26,7 +26,7 @@ of a message needs to be null terminated i.e it's last byte needs to be **\0**
 ## Pre - Gameplay Messages
 pre gameplay messages are all the messages that can be made before an actual game starts
 
-### Request Alias
+### Request_Alias
 #### Client --> Server
 #### Message type: 1
 #### Description
@@ -41,7 +41,7 @@ Var bytes   : String    : The alias the user is requesting
 
 ---
 
-### Approve Alias
+### Approved_Alias
 #### Server --> Client
 #### Message type: 2
 #### Description
@@ -53,7 +53,7 @@ This message is sent to the client when the alias he picked has been approved.
 
 ---
 
-### Denied Alias
+### Denied_Alias
 #### Server --> Client
 #### Message type: 3
 #### Description
@@ -66,7 +66,7 @@ var bytes   : string    : Reason for disproving
 
 ---
 
-### Request game list
+### Request_Game_List
 #### Client --> Server
 #### Message type: 4
 #### Description
@@ -78,7 +78,7 @@ This message is sent to the server when the client wishes to update his open gam
 
 ---
 
-### Game list
+### Game_List
 #### Server --> Client
 #### Message type: 5
 #### Description
@@ -98,7 +98,7 @@ var bytes   : string    : Game name (game creator picks this)
 
 ---
 
-### Create Game
+### Create_Game
 #### Client --> Server
 #### Message type: 6
 #### Description
@@ -111,7 +111,7 @@ var bytes   : string    : Game name
 
 ---
 
-### Create Game approved
+### Create_Game_Approved
 #### Server --> Client
 #### Message type: 7
 #### Description
@@ -126,7 +126,7 @@ var bytes   : string    : Game name
 
 ---
 
-### Create Game Denied
+### Create_Game_Denied
 #### Server --> Client
 #### Message type: 8
 #### Description
@@ -140,7 +140,7 @@ var bytes   : string    : Reason for denying game creation
 
 ---
 
-### Join Game
+### Join_Game
 #### Client --> Server
 #### Message type: 9
 #### Description
@@ -153,7 +153,7 @@ var bytes   : string    : Game id
 
 ---
 
-### Leave Game
+### Leave_Game
 #### Client --> Server
 #### Message type: 10
 #### Description
@@ -165,7 +165,7 @@ Sent to the Server when a client wishes to leave a game. This can only be sent i
 
 ---
 
-## Gameplay Messages
+## Gameplay_Messages
 A game is composed of 2 players and a ball. The game board is 500 units in height and 750 units in length. Each player has a height of 125 units and no width and moves only vertically. Each player is placed 10 units before the edge of their side of the game board. The ball is 25x25 units. As the ball moves if the player moves into it's way the ball bounces off the player and starts heading towards the other players side. if the player does not get in it's way and the ball moves off through their side of the board, the other player wins that round. Each game has 10 rounds.
 
 player positions are relative to the bottom unit of the player. i.e if the player position is 0 :
@@ -176,7 +176,7 @@ ball position = mathematical graph positions (x and y)
 
 ---
 
-### Start Game
+### Start_Game
 #### Server --> Client
 #### Message type: 11
 #### Description
@@ -197,7 +197,7 @@ var bytes   : string    : Game name
 
 ---
 
-### State Update
+### State_Update
 #### Server --> Client
 #### Message type: 12
 #### Description
@@ -212,7 +212,7 @@ Message sent from the server to the clients in a game 60 times a second telling 
 
 ---
 
-### Round Update
+### Round_Update
 #### Server --> Client
 #### Message type: 13
 #### Description
@@ -229,7 +229,7 @@ before the ball begins moving again to give players time to recover.
 
 ---
 
-### Game Over
+### Game_Over
 #### Server --> Client
 #### Message type: 14
 #### Description
@@ -244,7 +244,7 @@ Sent to the players when the game has finished.
 
 ---
 
-### Leave Game
+### Leave_Game
 #### Client --> Server
 #### Message type: 15
 #### Description
