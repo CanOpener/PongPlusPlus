@@ -23,7 +23,8 @@ of a message needs to be null terminated i.e it's last byte needs to be **\0**
 
 ---
 
-# All Messages
+## Pre - Gameplay Messages
+pre gameplay messages are all the messages that can be made before an actual game starts
 
 ### Request Alias
 #### Client --> Server
@@ -52,7 +53,7 @@ This message is sent to the client when the alias he picked has been approved.
 
 ---
 
-### Disprove Alias
+### Denied Alias
 #### Server --> Client
 #### Message type: 3
 #### Description
@@ -93,6 +94,48 @@ This message is sent to a client to give it the updated list of open games. This
 var bytes   : string    : Game id, a unique identifier for a game.
 var bytes   : string    : Alias of the user who created the game.
 var bytes   : string    : Game name (game creator picks this)
+```
+
+---
+
+### Create Game
+#### Client --> Server
+#### Message type: 6
+#### Description
+This message is sent when a client wishes to create a game lobby.
+#### Payload
+```
+2 bytes     : uint      : Message type
+var bytes   : string    : Game name
+```
+
+---
+
+### Create Game approved
+#### Server --> Client
+#### Message type: 7
+#### Description
+Sent to the client who requested to create a game. Once the game is created the client cannot
+join any other games until he specifically leaves this game.
+#### Payload
+```
+2 bytes     : uint      : Message type
+var bytes   : string    : Game id
+var bytes   : string    : Game name
+```
+
+---
+
+### Create Game Denied
+#### Server --> Client
+#### Message type: 8
+#### Description
+Sent to the client who wanted to create a game.
+#### Payload
+```
+2 bytes     : uint      : Message type
+var bytes   : string    : Game name
+var bytes   : string    : Reason for denying game creation
 ```
 
 ---
