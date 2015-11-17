@@ -243,3 +243,28 @@ Sent to the players when the game has finished.
 ```
 
 ---
+
+### Leave Game
+#### Client --> Server
+#### Message type: 15
+#### Description
+When a client Leaves an open game or the TCP connection disconnects the game goes to the other player.
+#### Payload
+```
+1 byte      : uint      : Message type
+```
+
+---
+
+### Move
+#### Client --> Server
+#### Message type: 16
+#### Description
+When a player is changing his position this message is called.
+#### Payload
+```
+1 byte      : uint      : Message type
+2 bytes     : uint      : The players new position
+```
+
+---
