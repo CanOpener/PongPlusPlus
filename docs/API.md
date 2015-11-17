@@ -139,3 +139,28 @@ var bytes   : string    : Reason for denying game creation
 ```
 
 ---
+
+### Join Game
+#### Client --> Server
+#### Message type: 9
+#### Description
+Sent to the server when a client wishes to join a game.
+#### Payload
+```
+2 bytes     : uint      : Message type
+var bytes   : string    : Game id
+```
+
+---
+
+### Leave Game
+#### Client --> Server
+#### Message type: 10
+#### Description
+Sent to the Server when a client wishes to leave a game. This can only be sent if the client is in a game loby he created. once the game started and the client wishes to leave the game another call is used for that which can be seen in the section below.
+#### Payload
+```
+2 bytes     : uint      : Message type
+```
+
+---
