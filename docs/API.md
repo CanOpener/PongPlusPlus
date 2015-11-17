@@ -25,8 +25,6 @@ of a message needs to be null terminated i.e it's last byte needs to be **\0**
 
 # All Messages
 
----
-
 ### Request Alias
 #### Client --> Server
 #### Message type: 1
@@ -92,9 +90,9 @@ This message is sent to a client to give it the updated list of open games. This
 // the following represents a game. it will be repeated
 // depending on the number of open games.
 4 bytes     : int       : Unix timestamp of when the game was created
+var bytes   : string    : Game id, a unique identifier for a game.
 var bytes   : string    : Alias of the user who created the game.
 var bytes   : string    : Game name (game creator picks this)
-
 ```
 
 ---
