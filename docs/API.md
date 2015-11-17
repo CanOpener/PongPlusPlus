@@ -10,7 +10,7 @@ needs to be created.
 Each individual message sent to and from the server needs to be prefixed by a 2 Byte (16bit) unsigned
 integer which describes how many bytes the following message contains. The server and client will then know
 how many of the following bytes to make the message. once that many bytes has been read and a message is composed :
-the following 2 bytes will be the next messages prefix (and so on).
+the following 1 byte will be the next messages prefix (and so on).
 
 ## Message types
 Each message has message type. i.e a "move" message may have a type of 1 which tells the server
@@ -35,7 +35,7 @@ message is to give the server a unique string (username/alias) representing what
 wishes to call himself.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 Var bytes   : String    : The alias the user is requesting
 ```
 
@@ -48,7 +48,7 @@ Var bytes   : String    : The alias the user is requesting
 This message is sent to the client when the alias he picked has been approved.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 ```
 
 ---
@@ -60,7 +60,7 @@ This message is sent to the client when the alias he picked has been approved.
 This message is sent to the client when the alias he picked has been denied and he must pick another one.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 var bytes   : string    : Reason for disproving
 ```
 
@@ -73,7 +73,7 @@ var bytes   : string    : Reason for disproving
 This message is sent to the server when the client wishes to update his open game list. The open game list is the list of opened pong games with one person in them waiting for someone else to join
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 ```
 
 ---
@@ -85,7 +85,7 @@ This message is sent to the server when the client wishes to update his open gam
 This message is sent to a client to give it the updated list of open games. This may happen regularly or immediately after a client requests the game list.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 2 bytes     : uint      : Number of games
 
 // the following represents a game. it will be repeated
@@ -105,7 +105,7 @@ var bytes   : string    : Game name (game creator picks this)
 This message is sent when a client wishes to create a game lobby.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 var bytes   : string    : Game name
 ```
 
@@ -119,7 +119,7 @@ Sent to the client who requested to create a game. Once the game is created the 
 join any other games until he specifically leaves this game.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 var bytes   : string    : Game id
 var bytes   : string    : Game name
 ```
@@ -133,7 +133,7 @@ var bytes   : string    : Game name
 Sent to the client who wanted to create a game.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte     : uint      : Message type
 var bytes   : string    : Game name
 var bytes   : string    : Reason for denying game creation
 ```
@@ -147,7 +147,7 @@ var bytes   : string    : Reason for denying game creation
 Sent to the server when a client wishes to join a game.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 var bytes   : string    : Game id
 ```
 
@@ -160,7 +160,7 @@ var bytes   : string    : Game id
 Sent to the Server when a client wishes to leave a game. This can only be sent if the client is in a game loby he created. once the game started and the client wishes to leave the game another call is used for that which can be seen in the section below.
 #### Payload
 ```
-2 bytes     : uint      : Message type
+1 byte      : uint      : Message type
 ```
 
 ---
