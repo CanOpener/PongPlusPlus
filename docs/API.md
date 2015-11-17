@@ -9,8 +9,8 @@ needs to be created.
 ##### Prefixing messages with message length
 Each individual message sent to and from the server needs to be prefixed by a 2 Byte (16bit) unsigned
 integer which describes how many bytes the following message contains. The server and client will then know
-how many of the following bytes to make the message. once that many bytes has been read and a message is composed :
-the following 1 byte will be the next messages prefix (and so on).
+how many of the following bytes to make the message. once that many bytes has been read and a message is composed,
+the following 2 bytes in the stream will be the next messages prefix (and so on).
 
 ## Message types
 Each message has message type. i.e a "move" message may have a type of 1 which tells the server
@@ -133,7 +133,7 @@ var bytes   : string    : Game name
 Sent to the client who wanted to create a game.
 #### Payload
 ```
-1 byte     : uint      : Message type
+1 byte      : uint      : Message type
 var bytes   : string    : Game name
 var bytes   : string    : Reason for denying game creation
 ```
