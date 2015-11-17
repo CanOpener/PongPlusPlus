@@ -1,2 +1,2 @@
-# pong
-Pong in C++ SDL, and Golang
+# Pong++ Server
+Multiplayer pong game server.
