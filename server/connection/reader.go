@@ -1,4 +1,4 @@
-package connection
+package Connection
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-func (conn *connection) ToggleReader() bool {
+func (conn *Connection) ToggleReader() bool {
 	if conn.ReaderListening {
 		go conn.StopReader()
 		return false
@@ -16,7 +16,7 @@ func (conn *connection) ToggleReader() bool {
 	return true
 }
 
-func (conn *connection) StartReader() {
+func (conn *Connection) StartReader() {
 	conn.ReaderListening = true
 
 	var messageBuffer bytes.Buffer
@@ -70,6 +70,6 @@ func (conn *connection) StartReader() {
 	}
 }
 
-func (conn *connection) StopReader() {
+func (conn *Connection) StopReader() {
 	conn.ReaderListening = false
 }

@@ -1,10 +1,10 @@
-package connection
+package Connection
 
 import (
 	"encoding/binary"
 )
 
-func (conn *connection) ToggleWriter() bool {
+func (conn *Connection) ToggleWriter() bool {
 	if conn.WriterListening {
 		go conn.StopWriter()
 		return false
@@ -13,7 +13,7 @@ func (conn *connection) ToggleWriter() bool {
 	return true
 }
 
-func (conn *connection) StartWriter() {
+func (conn *Connection) StartWriter() {
 	conn.WriterListening = true
 	for {
 		select {
@@ -32,6 +32,6 @@ func (conn *connection) StartWriter() {
 	}
 }
 
-func (conn *connection) StopWriter() {
+func (conn *Connection) StopWriter() {
 	conn.WriterListening = false
 }
