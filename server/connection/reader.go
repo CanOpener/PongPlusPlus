@@ -28,6 +28,7 @@ func (conn *Connection) StartReader() {
 		buf := make([]byte, 1400)
 
 		dataSize, err := conn.Socket.Read(buf)
+		fmt.Println("Received message: ", dataSize, " bytes")
 		if err != nil {
 			break
 		}

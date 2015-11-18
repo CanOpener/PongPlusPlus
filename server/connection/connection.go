@@ -16,9 +16,11 @@ type Connection struct {
 
 func NewConnection(conn net.Conn) Connection {
 	return Connection{
-		Registered:      false,
-		ReaderListening: false,
-		WriterListening: false,
-		Socket:          conn,
+		Registered:        false,
+		ReaderListening:   false,
+		WriterListening:   false,
+		IncommingMessages: make(chan []byte, 100),
+		OutgoingMessages:  make(chan []byte, 100),
+		Socket:            conn,
 	}
 }
