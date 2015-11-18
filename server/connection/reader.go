@@ -68,9 +68,8 @@ func (conn *connection) StartReader() {
 			}
 		}
 	}
-	conn.ReaderListening = false
 }
 
 func (conn *connection) StopReader() {
-
+	conn.ReaderListening = false
 }
