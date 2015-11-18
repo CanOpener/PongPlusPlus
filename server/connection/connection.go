@@ -1,4 +1,4 @@
-package Connection
+package connection
 
 import (
 	"net"
@@ -15,8 +15,8 @@ type Connection struct {
 }
 
 func NewConnection(conn net.Conn) Connection {
-	return connection{
-		Registerd:       false,
+	return Connection{
+		Registered:      false,
 		ReaderListening: false,
 		WriterListening: false,
 		Socket:          conn,
