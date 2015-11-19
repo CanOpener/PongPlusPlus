@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"github.com/canopener/PongPlusPlus-Server/connection"
 	"log"
 	"net"
 )
