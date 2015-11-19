@@ -17,6 +17,7 @@ func (conn *Connection) ToggleWriter() bool {
 func (conn *Connection) StartWriter() {
 	conn.WriterListening = true
 	for {
+		fmt.Println("writer")
 		select {
 		case messageBytes := <-conn.OutgoingMessages:
 			fmt.Println("Received message in Outgoing Messages: ", string(messageBytes))
@@ -27,11 +28,6 @@ func (conn *Connection) StartWriter() {
 
 			fmt.Println("Sending message: ", len(messageToWrite), " bytes")
 			conn.Socket.Write(messageToWrite)
-		default:
-			if !conn.WriterListening {
-				fmt.Println("Going to close")
-				return
-			}
 		}
 	}
 }
