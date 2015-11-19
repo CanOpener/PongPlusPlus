@@ -41,7 +41,7 @@ Var bytes   : String    : The alias the user is requesting
 
 ---
 
-### Approved Alias
+### Alias Approved
 #### Server --> Client
 #### Message type: 2
 #### Description
@@ -53,7 +53,7 @@ This message is sent to the client when the alias he picked has been approved.
 
 ---
 
-### Denied Alias
+### Alias Denied
 #### Server --> Client
 #### Message type: 3
 #### Description
@@ -157,7 +157,7 @@ var bytes   : string    : Game id
 #### Client --> Server
 #### Message type: 10
 #### Description
-Sent to the Server when a client wishes to leave a game. This can only be sent if the client is in a game loby he created. once the game started and the client wishes to leave the game another call is used for that which can be seen in the section below.
+Sent to the Server when a client wishes to leave a game.
 #### Payload
 ```
 1 byte      : uint      : Message type
@@ -244,21 +244,9 @@ Sent to the players when the game has finished.
 
 ---
 
-### Leave Game
-#### Client --> Server
-#### Message type: 15
-#### Description
-When a client Leaves an open game or the TCP connection disconnects the game goes to the other player.
-#### Payload
-```
-1 byte      : uint      : Message type
-```
-
----
-
 ### Move
 #### Client --> Server
-#### Message type: 16
+#### Message type: 15
 #### Description
 When a player is changing his position this message is called.
 #### Payload

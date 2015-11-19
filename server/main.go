@@ -21,8 +21,8 @@ func main() {
 			log.Fatalln(err)
 		}
 		conn := connection.NewConnection(socket)
-		conn.ToggleReader()
-		conn.ToggleWriter()
+		go conn.StartReader()
+		go conn.StartWriter()
 		go listenMessage(&conn)
 	}
 }
