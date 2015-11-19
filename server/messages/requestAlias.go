@@ -2,12 +2,11 @@ package messages
 
 import (
 	"bytes"
-	"encoding/binary"
 	"log"
 )
 
 type RequestAliasMessage struct {
-	MessageType uint16
+	MessageType uint8
 	Alias       string
 }
 
@@ -21,17 +20,13 @@ func NewRequestAliasMessage(alias string) RequestAliasMessage {
 func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	message := RequestAliasMessage{}
 	buff := bytes.NewBuffer(messageBytes)
-	typeBytes := make([]byte, 2)
 
-	total, err := buff.Read(typeBytes)
+	typeByte, err := buff.ReadByte()
 	if err != nil {
 		log.Fatalln("Decode RequestAlias error: ", err)
 	}
-	if total != 2 {
-		log.Fatalln("Decode RequestAlias error: total messageTypeBytes != 2")
-	}
 
-	message.MessageType = binary.LittleEndian.Uint16(typeBytes)
+	message.MessageType = uint8(typeByte)
 	message.Alias, err = buff.ReadString(NullTerm)
 	if err != nil {
 		log.Fatalln("Decode RequestAlias error: ", err)
@@ -41,8 +36,8 @@ func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 }
 
 func (ms *RequestAliasMessage) Bytes() []byte {
-	typeBytes := make([]byte, 2)
-	binary.LittleEndian.PutUint16(typeBytes, ms.MessageType)
+	typeBytes := make([]byte, 1)
+	typeBytes[0] = byte(ms.MessageType)
 	AliasBytes := append([]byte(ms.Alias), NullTerm)
 
 	return append(typeBytes, AliasBytes...)

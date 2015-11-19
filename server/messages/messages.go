@@ -5,7 +5,7 @@ import (
 )
 
 const (
-	RequestAliasMessageType = 1 + iota
+	RequestAliasMessageType uint8 = 1 + iota
 	AliasApprovedMessageType
 	AliasDeniedMessageType
 	RequestGameListMessageType
