@@ -20,16 +20,15 @@ func NewRequestAliasMessage(alias string) RequestAliasMessage {
 func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	message := RequestAliasMessage{}
 	buff := bytes.NewBuffer(messageBytes)
-
 	typeByte, err := buff.ReadByte()
 	if err != nil {
-		log.Fatalln("Decode RequestAlias error: ", err)
+		log.Fatalln("RequestAlias ", err)
 	}
 
 	message.MessageType = uint8(typeByte)
 	message.Alias, err = buff.ReadString(NullTerm)
 	if err != nil {
-		log.Fatalln("Decode RequestAlias error: ", err)
+		log.Fatalln("RequestAlias", err)
 	}
 
 	return message
