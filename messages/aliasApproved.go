@@ -6,7 +6,7 @@ type AliasApprovedMessage struct {
 
 func NewAliasApprovedMessage() AliasApprovedMessage {
 	return AliasApprovedMessage{
-		MessageType: AliasApprovedMessageType,
+		MessageType: TypeAliasApproved,
 	}
 }
 

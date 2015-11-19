@@ -12,7 +12,7 @@ type RequestAliasMessage struct {
 
 func NewRequestAliasMessage(alias string) RequestAliasMessage {
 	return RequestAliasMessage{
-		MessageType: RequestAliasMessageType,
+		MessageType: TypeRequestAlias,
 		Alias:       alias,
 	}
 }

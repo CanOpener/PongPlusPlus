@@ -12,7 +12,7 @@ type AliasDeniedMessage struct {
 
 func NewAliasDeniedMessage(reason string) AliasDeniedMessage {
 	return AliasDeniedMessage{
-		MessageType: AliasDeniedMessageType,
+		MessageType: TypeAliasDenied,
 		Reason:      reason,
 	}
 }
@@ -32,4 +32,11 @@ func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 	}
 
 	return message
+}
+
+func (ms *AliasDeniedMessage) Bytes() []byte {
+	typeBytes := make([]byte, 1)
+	typeBytes[0] = byte(ms.MessageType)
+	ReasonBytes := append([]byte(ms.Reason), NullTerm)
+	return append(typeBytes, ReasonBytes...)
 }
