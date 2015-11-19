@@ -1,7 +1,38 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"log"
+	"net"
+)
 
 func main() {
-	fmt.Println("Coming soon!")
+	fmt.Println("Server listening on localhost:3000")
+	listener, err := net.Listen("tcp", "localhost:3000")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer listener.Close()
+
+	for {
+		socket, err := listener.Accept()
+		if err != nil {
+			log.Fatalln(err)
+		}
+		conn := connection.NewConnection(socket)
+		conn.ToggleReader()
+		conn.ToggleWriter()
+		go listenMessage(&conn)
+	}
+}
+
+func listenMessage(conn *connection.Connection) {
+	for {
+		select {
+		case message := <-conn.IncommingMessages:
+			fmt.Println("New message: ", string(message))
+			conn.OutgoingMessages <- message
+		}
+	}
 }
