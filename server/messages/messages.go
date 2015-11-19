@@ -1,28 +1,31 @@
 package messages
 
 import (
-    "encoding/binary"
+	"encoding/binary"
 )
 
 const (
-	RequestAlias  = Iota
-	AliasApproved
-	AliasDenied        
-	RequestGameList
-	GameList
-	CreateGame
-	CreateGameApproved
-	CreateGameDenied
-	JoinGame
-	LeaveGame
-	StartGame
-	StateUpdate
-	RoundUpdate
-	GameOver
-	Move
+	RequestAliasMessageType = 1 + iota
+	AliasApprovedMessageType
+	AliasDeniedMessageType
+	RequestGameListMessageType
+	GameListMessageType
+	CreateGameMessageType
+	CreateGameApprovedMessageType
+	CreateGameDeniedMessageType
+	JoinGameMessageType
+	LeaveGameMessageType
+	StartGameMessageType
+	StateUpdateMessageType
+	RoundUpdateMessageType
+	GameOverMessageType
+	MoveMessageType
 )
 
-func GetMessageType(message []byte) uint8 {
-    typeByte := make([]byte, 1)
-    binary.
+const (
+	NullTerm byte = byte('\000')
+)
+
+func GetMessageType(message []byte) uint16 {
+	return binary.LittleEndian.Uint16(message[0:2])
 }
