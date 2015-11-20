@@ -3,34 +3,23 @@ package connection
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"log"
 )
 
-func (conn *Connection) ToggleReader() bool {
-	if conn.ReaderListening {
-		go conn.StopReader()
-		return false
-	}
-	go conn.StartReader()
-	return true
-}
-
-func (conn *Connection) StartReader() {
-	conn.ReaderListening = true
-
+func (conn *Connection) startReader() {
 	var messageBuffer bytes.Buffer
 	var bytesToRead int
+	log.Println("Reader started for conn: ", conn.Alias)
 
-	for conn.ReaderListening {
-		fmt.Println("Buffer Length:   ", messageBuffer.Len())
-		fmt.Println("Buffer Capacity: ", messageBuffer.Cap())
+	for {
 		buf := make([]byte, 1400)
 
 		dataSize, err := conn.Socket.Read(buf)
-		fmt.Println("Received message: ", dataSize, " bytes")
+		log.Println(conn.Alias, " Reader received message: ", dataSize, " bytes")
 		if err != nil {
-			break
+			log.Println("Reader Terminated for conn: ", conn.Alias)
+			conn.infoChan <- 0
+			return
 		}
 		data := buf[0:dataSize]
 		messageBuffer.Write(data)
@@ -69,8 +58,4 @@ func (conn *Connection) StartReader() {
 			}
 		}
 	}
-}
-
-func (conn *Connection) StopReader() {
-	conn.ReaderListening = false
 }

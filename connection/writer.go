@@ -2,36 +2,32 @@ package connection
 
 import (
 	"encoding/binary"
-	"fmt"
+	"log"
 )
 
-func (conn *Connection) ToggleWriter() bool {
-	if conn.WriterListening {
-		go conn.StopWriter()
-		return false
-	}
-	go conn.StartWriter()
-	return true
-}
-
-func (conn *Connection) StartWriter() {
-	conn.WriterListening = true
+func (conn *Connection) startWriter() {
+	log.Println("Writer started for conn: ", conn.Alias)
 	for {
-		fmt.Println("writer")
 		select {
-		case messageBytes := <-conn.OutgoingMessages:
-			fmt.Println("Received message in Outgoing Messages: ", string(messageBytes))
+		case messageBytes := <-conn.outgoingMessages:
+			log.Println("Conn ", conn.Alias, " writing message: ", len(messageBytes), " bytes")
 			length := uint16(len(messageBytes))
 			lengthBytes := make([]byte, 2)
 			binary.LittleEndian.PutUint16(lengthBytes, length)
 			messageToWrite := append(lengthBytes, messageBytes...)
-
-			fmt.Println("Sending message: ", len(messageToWrite), " bytes")
 			conn.Socket.Write(messageToWrite)
+		case <-conn.writerKill:
+			log.Println("Writer killed for conn: ", conn.Alias)
+			conn.infoChan <- 1
+			return
 		}
 	}
 }
 
-func (conn *Connection) StopWriter() {
-	conn.WriterListening = false
+func (conn *Connection) killWriter() {
+	conn.writerKill <- false
+}
+
+func (conn *Connection) Write(message []byte) {
+	conn.outgoingMessages <- message
 }

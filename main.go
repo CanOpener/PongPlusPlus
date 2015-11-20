@@ -21,9 +21,7 @@ func main() {
 			log.Fatalln(err)
 		}
 		conn := connection.NewConnection(socket)
-		go conn.StartReader()
-		go conn.StartWriter()
-		go listenMessage(&conn)
+		go listenMessage(conn)
 	}
 }
 
@@ -32,7 +30,7 @@ func listenMessage(conn *connection.Connection) {
 		select {
 		case message := <-conn.IncommingMessages:
 			fmt.Println("New message: ", string(message))
-			conn.OutgoingMessages <- message
+			conn.Write(message)
 		}
 	}
 }
