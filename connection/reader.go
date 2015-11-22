@@ -6,6 +6,7 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// startReader starts the connection reader
 func (conn *Connection) startReader() {
 	var messageBuffer bytes.Buffer
 	var bytesToRead int

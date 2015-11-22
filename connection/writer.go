@@ -5,6 +5,7 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// startWriter starts the writer for the connection
 func (conn *Connection) startWriter() {
 	srvlog.General("Writer started for conn: ", conn.Alias)
 	for {
@@ -24,10 +25,12 @@ func (conn *Connection) startWriter() {
 	}
 }
 
+// killWriter kills the startWriter function
 func (conn *Connection) killWriter() {
 	conn.writerKill <- false
 }
 
+// write tells the writer to write something to the connection
 func (conn *Connection) Write(message []byte) {
 	conn.outgoingMessages <- message
 }

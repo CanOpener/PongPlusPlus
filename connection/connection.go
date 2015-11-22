@@ -6,18 +6,34 @@ import (
 	"net"
 )
 
-var AllConnections []*Connection = make([]*Connection, 0, 100)
+// AllConnections is the slice of all connections on the server
+// at any given time
+var AllConnections = make([]*Connection, 0, 100)
 
+// Connection is the structure that defines a connection to the server
 type Connection struct {
-	Registered        bool
-	Alias             string
+	// Registerd is true if the connection has received its alias
+	Registered bool
+	// Alias is the alias of the connection
+	Alias string
+	// IncommingMessages is the channel through wich messages from the
+	// connection come in
 	IncommingMessages chan []byte
-	outgoingMessages  chan []byte
-	writerKill        chan bool
-	infoChan          chan uint8
-	Socket            net.Conn
+	// outgoingMessages is the channel which the Writer listens to so
+	// it can send messages to the connection
+	outgoingMessages chan []byte
+	// writerKill is the channel used to kill the writer. If the writer
+	// receives anything through this connection it terminates itself
+	writerKill chan bool
+	// infoChan is the internal communications channel
+	infoChan chan uint8
+	// Socket is the net.Connection object
+	// the core of the struct
+	Socket net.Conn
 }
 
+// NewConnection returns an instance of connection.
+// It automatically starts the reader and writer listeners
 func NewConnection(conn net.Conn) *Connection {
 	newConn := &Connection{
 		Registered:        false,
@@ -37,11 +53,13 @@ func NewConnection(conn net.Conn) *Connection {
 	return newConn
 }
 
+// AddConnection adds a connection to the AllConnections list
 func AddConnection(conn *Connection) {
 	AllConnections = append(AllConnections, conn)
 	srvlog.General("New connection added to list: ", conn.Alias)
 }
 
+// RemoveConnection removes a connection from the AllConnections list
 func RemoveConnection(conn *Connection) {
 	var i int
 	for i = 0; i < len(AllConnections); i++ {
@@ -53,6 +71,8 @@ func RemoveConnection(conn *Connection) {
 	}
 }
 
+// startInternalInfoInterprater listens for critical internal information
+// about the connection.
 func (conn *Connection) startInternalInfoInterprater() {
 	for {
 		select {
