@@ -5,11 +5,13 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// RequestAliasMessage is a structure representing a Request alias message
 type RequestAliasMessage struct {
 	MessageType uint8
 	Alias       string
 }
 
+// NewRequestAliasMessage returns an instance of RequestAliasMessage based on params
 func NewRequestAliasMessage(alias string) RequestAliasMessage {
 	return RequestAliasMessage{
 		MessageType: TypeRequestAlias,
@@ -17,6 +19,8 @@ func NewRequestAliasMessage(alias string) RequestAliasMessage {
 	}
 }
 
+// NewRequestAliasMessageFromBytes returns an instance of RequestAliasMessage
+// from a slice of bytes
 func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	message := RequestAliasMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -34,6 +38,8 @@ func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	return message
 }
 
+// Bytes returns a slice of bytes representing a RequestAliasMessage
+// which can be sent through a connection
 func (ms *RequestAliasMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)
