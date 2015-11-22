@@ -5,7 +5,7 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
-// CreateGameApprovedMessage is a structure representing a CreateGameApprovedMessage
+// CreateGameApprovedMessage is a structure representing a Create game approved message
 type CreateGameApprovedMessage struct {
 	MessageType uint8
 	GameID      string

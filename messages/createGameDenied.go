@@ -5,12 +5,14 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// CreateGameDeniedMessage is a structure representing a Create game denied message
 type CreateGameDeniedMessage struct {
 	MessageType uint8
 	GameName    string
 	Reason      string
 }
 
+// NewCreateGameDeniedMessage returns an instance of CreateGameDeniedMessage from params
 func NewCreateGameDeniedMessage(gameName, reason string) CreateGameDeniedMessage {
 	return CreateGameDeniedMessage{
 		MessageType: TypeCreateGameDenied,
@@ -19,6 +21,8 @@ func NewCreateGameDeniedMessage(gameName, reason string) CreateGameDeniedMessage
 	}
 }
 
+// NewCreateGameDeniedMessageFromBytes returns an instance of CreateGameDeniedMessage
+// from a slice of bytes
 func NewCreateGameDeniedMessageFromBytes(messageBytes []byte) CreateGameDeniedMessage {
 	message := CreateGameDeniedMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -40,6 +44,8 @@ func NewCreateGameDeniedMessageFromBytes(messageBytes []byte) CreateGameDeniedMe
 	return message
 }
 
+// Bytes returns a slice of bytes representing an CreateGameDeniedMessage
+// which can be sent through a connection
 func (ms *CreateGameDeniedMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)
