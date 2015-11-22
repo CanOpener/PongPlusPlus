@@ -24,6 +24,7 @@ var (
 	warningColourFunc = ansi.ColorFunc("yellow+b:black")
 )
 
+// The clolour type enumerator
 const (
 	startupColour int = iota
 	fatalColour
@@ -31,6 +32,8 @@ const (
 	warningColour
 )
 
+// Init initialises the srvlog package. if either consoleLog or fileLog
+// is true it will start the logger in another gorutine ready to log
 func Init(consolLog, fileLog bool, pathToFile string) {
 	logToConsol = consolLog
 	logToFile = fileLog
@@ -41,6 +44,8 @@ func Init(consolLog, fileLog bool, pathToFile string) {
 	}
 }
 
+// Startup used to log the startup message
+// example "Startup("Server listening on port:", PORT)"
 func Startup(args ...interface{}) {
 	logChan <- logItem{
 		longTime:         true,
@@ -50,6 +55,8 @@ func Startup(args ...interface{}) {
 	}
 }
 
+// Fatal is used to log something fatal
+// This will terminate the process with an exit code of 1
 func Fatal(args ...interface{}) {
 	logChan <- logItem{
 		longTime:         false,
@@ -59,6 +66,7 @@ func Fatal(args ...interface{}) {
 	}
 }
 
+// General is used to log general stuff
 func General(args ...interface{}) {
 	logChan <- logItem{
 		longTime:         false,
@@ -68,6 +76,7 @@ func General(args ...interface{}) {
 	}
 }
 
+// Warning is used to log warnings
 func Warning(args ...interface{}) {
 	logChan <- logItem{
 		longTime:         false,
@@ -77,6 +86,7 @@ func Warning(args ...interface{}) {
 	}
 }
 
+// stringFromArgs returns a string of the combination of the arguments given
 func stringFromArgs(args ...interface{}) string {
 	var formatStr string
 	for i := range args {
@@ -88,6 +98,7 @@ func stringFromArgs(args ...interface{}) string {
 	return fmt.Sprintf(formatStr, args...)
 }
 
+// logitem is the struct passed to the logger function
 type logItem struct {
 	longTime         bool
 	preset           string
@@ -95,6 +106,7 @@ type logItem struct {
 	content          string
 }
 
+// listen is the listener which runs in its own gorutine and logs messages
 func listen() {
 	for {
 		select {
@@ -108,6 +120,7 @@ func listen() {
 	}
 }
 
+// writeToFile logs a message to the logfile
 func writeToFile(item logItem) {
 	if logToFile {
 		file, err := os.OpenFile(filePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0666)
@@ -123,12 +136,14 @@ func writeToFile(item logItem) {
 	}
 }
 
+// writeToConsole logs a message to the console
 func writeToConsole(item logItem) {
 	if logToConsol {
 		fmt.Println(getTimestamp(item.longTime), colourInText(item.preset, item.presetColourFunc), item.content)
 	}
 }
 
+// colourInText returns the text coloured in based on the colour func enumerator
 func colourInText(text string, colourFunc int) string {
 	switch colourFunc {
 	case startupColour:
@@ -144,6 +159,8 @@ func colourInText(text string, colourFunc int) string {
 	}
 }
 
+// returns the string form of the current time
+// specify true for presetting with the date too
 func getTimestamp(long bool) string {
 	now := time.Now().Local()
 	hour, min, sec := now.Clock()
