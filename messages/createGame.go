@@ -5,11 +5,13 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// CreateGameMessage is a structure representing a Create game message
 type CreateGameMessage struct {
 	MessageType uint8
 	GameName    string
 }
 
+// NewCreateGameMessage returns an instance of CreateGameMessage based on params
 func NewCreateGameMessage(gameName string) CreateGameMessage {
 	return CreateGameMessage{
 		MessageType: TypeCreateGame,
@@ -17,6 +19,8 @@ func NewCreateGameMessage(gameName string) CreateGameMessage {
 	}
 }
 
+// NewCreateGameMessageFromBytes  returns an instance of CreateGameMessage
+// based on a slice of bytes
 func NewCreateGameMessageFromBytes(messageBytes []byte) CreateGameMessage {
 	message := CreateGameMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -34,6 +38,8 @@ func NewCreateGameMessageFromBytes(messageBytes []byte) CreateGameMessage {
 	return message
 }
 
+// Bytes returns a slice of bytes representing a CreateGameMessage
+// which can be sent through a connection
 func (ms *CreateGameMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)

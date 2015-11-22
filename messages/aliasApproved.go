@@ -2,7 +2,6 @@ package messages
 
 // AliasApprovedMessage is the struct which describes an Alias approved message
 type AliasApprovedMessage struct {
-	//MessageType is the message type
 	MessageType uint8
 }
 
