@@ -1,8 +1,8 @@
 package connection
 
 import (
+	"github.com/canopener/PongPlusPlus-Server/srvlog"
 	"github.com/satori/go.uuid"
-	"log"
 	"net"
 )
 
@@ -29,7 +29,7 @@ func NewConnection(conn net.Conn) *Connection {
 		Socket:            conn,
 	}
 
-	log.Println("New connection Created: ", newConn.Alias)
+	srvlog.General("New connection Created: ", newConn.Alias)
 	AddConnection(newConn)
 	go newConn.startReader()
 	go newConn.startWriter()
@@ -39,14 +39,14 @@ func NewConnection(conn net.Conn) *Connection {
 
 func AddConnection(conn *Connection) {
 	AllConnections = append(AllConnections, conn)
-	log.Println("New connection added to list: ", conn.Alias)
+	srvlog.General("New connection added to list: ", conn.Alias)
 }
 
 func RemoveConnection(conn *Connection) {
 	var i int
 	for i = 0; i < len(AllConnections); i++ {
 		if AllConnections[i].Alias == conn.Alias {
-			log.Println("Removing conn: ", conn.Alias, " from connection list")
+			srvlog.General("Removing conn: ", conn.Alias, " from connection list")
 			AllConnections = append(AllConnections[:i], AllConnections[i+1:]...)
 			return
 		}
@@ -60,13 +60,13 @@ func (conn *Connection) startInternalInfoInterprater() {
 			switch info {
 			case 0:
 				//Disconnected and Reader finished
-				log.Println("conn: ", conn.Alias, " info channel received message: 0")
+				srvlog.General("conn: ", conn.Alias, " info channel received message: 0")
 				conn.killWriter()
 				RemoveConnection(conn)
 				return
 			case 1:
 				//Writer killed
-				log.Println("conn: ", conn.Alias, " info channel received message: 1")
+				srvlog.General("conn: ", conn.Alias, " info channel received message: 1")
 				conn.Socket.Close() // close socket and kill Reader
 				RemoveConnection(conn)
 				return

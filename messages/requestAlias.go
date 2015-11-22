@@ -2,7 +2,7 @@ package messages
 
 import (
 	"bytes"
-	"log"
+	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
 type RequestAliasMessage struct {
@@ -22,13 +22,13 @@ func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	buff := bytes.NewBuffer(messageBytes)
 	typeByte, err := buff.ReadByte()
 	if err != nil {
-		log.Fatalln("RequestAlias ", err)
+		srvlog.Fatal("RequestAlias ", err)
 	}
 
 	message.MessageType = uint8(typeByte)
 	message.Alias, err = buff.ReadString(NullTerm)
 	if err != nil {
-		log.Fatalln("RequestAlias", err)
+		srvlog.Fatal("RequestAlias", err)
 	}
 
 	return message

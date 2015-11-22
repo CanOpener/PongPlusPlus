@@ -2,22 +2,22 @@ package connection
 
 import (
 	"encoding/binary"
-	"log"
+	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
 func (conn *Connection) startWriter() {
-	log.Println("Writer started for conn: ", conn.Alias)
+	srvlog.General("Writer started for conn: ", conn.Alias)
 	for {
 		select {
 		case messageBytes := <-conn.outgoingMessages:
-			log.Println("Conn ", conn.Alias, " writing message: ", len(messageBytes), " bytes")
+			srvlog.General("Conn ", conn.Alias, " writing message: ", len(messageBytes), " bytes")
 			length := uint16(len(messageBytes))
 			lengthBytes := make([]byte, 2)
 			binary.LittleEndian.PutUint16(lengthBytes, length)
 			messageToWrite := append(lengthBytes, messageBytes...)
 			conn.Socket.Write(messageToWrite)
 		case <-conn.writerKill:
-			log.Println("Writer killed for conn: ", conn.Alias)
+			srvlog.General("Writer killed for conn: ", conn.Alias)
 			conn.infoChan <- 1
 			return
 		}

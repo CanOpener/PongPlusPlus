@@ -3,21 +3,21 @@ package connection
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
+	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
 func (conn *Connection) startReader() {
 	var messageBuffer bytes.Buffer
 	var bytesToRead int
-	log.Println("Reader started for conn: ", conn.Alias)
+	srvlog.General("Reader started for conn: ", conn.Alias)
 
 	for {
 		buf := make([]byte, 1400)
 
 		dataSize, err := conn.Socket.Read(buf)
-		log.Println(conn.Alias, " Reader received message: ", dataSize, " bytes")
+		srvlog.General(conn.Alias, " Reader received message: ", dataSize, " bytes")
 		if err != nil {
-			log.Println("Reader Terminated for conn: ", conn.Alias)
+			srvlog.General("Reader Terminated for conn: ", conn.Alias)
 			conn.infoChan <- 0
 			return
 		}
@@ -30,10 +30,10 @@ func (conn *Connection) startReader() {
 					message := make([]byte, bytesToRead)
 					messageBytes, err := messageBuffer.Read(message)
 					if err != nil {
-						log.Fatalln(err)
+						srvlog.Fatal(err)
 					}
 					if messageBytes != bytesToRead {
-						log.Fatalln("Something went wrong, bytes to read != read bytes")
+						srvlog.Fatal("Something went wrong, bytes to read != read bytes")
 					}
 					conn.IncommingMessages <- message
 					bytesToRead = 0
@@ -43,10 +43,10 @@ func (conn *Connection) startReader() {
 					btrBuffer := make([]byte, 2)
 					btrBytes, err := messageBuffer.Read(btrBuffer)
 					if err != nil {
-						log.Fatalln(err)
+						srvlog.Fatal(err)
 					}
 					if btrBytes != 2 {
-						log.Fatalln("Something went wrong, btrBytes != 2")
+						srvlog.Fatal("Something went wrong, btrBytes != 2")
 					}
 
 					bytesToRead = int(binary.LittleEndian.Uint16(btrBuffer))

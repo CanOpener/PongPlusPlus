@@ -2,7 +2,7 @@ package messages
 
 import (
 	"bytes"
-	"log"
+	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
 type CreateGameMessage struct {
@@ -22,13 +22,13 @@ func NewCreateGameMessageFromBytes(messageBytes []byte) CreateGameMessage {
 	buff := bytes.NewBuffer(messageBytes)
 	typeByte, err := buff.ReadByte()
 	if err != nil {
-		log.Fatalln("CreateGame ", err)
+		srvlog.Fatal("CreateGame ", err)
 	}
 
 	message.MessageType = uint8(typeByte)
 	message.GameName, err = buff.ReadString(NullTerm)
 	if err != nil {
-		log.Fatalln("CreateGame ", err)
+		srvlog.Fatal("CreateGame ", err)
 	}
 
 	return message
