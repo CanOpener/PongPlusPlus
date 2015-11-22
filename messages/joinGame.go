@@ -5,11 +5,13 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// JoinGameMessage is a structure representing a Join game message
 type JoinGameMessage struct {
 	MessageType uint8
 	GameID      string
 }
 
+// NewJoinGameMessage returns an instance of JoinGameMessage based on params
 func NewJoinGameMessage(gameID string) JoinGameMessage {
 	return JoinGameMessage{
 		MessageType: TypeJoinGame,
@@ -17,6 +19,8 @@ func NewJoinGameMessage(gameID string) JoinGameMessage {
 	}
 }
 
+// NewJoinGameMessageFromBytes returns an instance of JoinGameMessage
+// from a slice of bytes
 func NewJoinGameMessageFromBytes(messageBytes []byte) JoinGameMessage {
 	message := JoinGameMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -34,6 +38,8 @@ func NewJoinGameMessageFromBytes(messageBytes []byte) JoinGameMessage {
 	return message
 }
 
+// Bytes returns a slice of bytes representing an JoinGameMessage
+// which can be sent through a connection
 func (ms *JoinGameMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)
