@@ -5,11 +5,13 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// AliasDeniedMessage is the struct which represents an Alias denied message
 type AliasDeniedMessage struct {
 	MessageType uint8
 	Reason      string
 }
 
+// NewAliasDeniedMessage returns an instance of AliasDeniedMessage based on params
 func NewAliasDeniedMessage(reason string) AliasDeniedMessage {
 	return AliasDeniedMessage{
 		MessageType: TypeAliasDenied,
@@ -17,6 +19,8 @@ func NewAliasDeniedMessage(reason string) AliasDeniedMessage {
 	}
 }
 
+// NewAliasDeniedMessageFromBytes returns an instance of AliasDeniedMessage based
+// on a slice of bytes
 func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 	message := AliasDeniedMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -34,6 +38,8 @@ func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 	return message
 }
 
+// Bytes returns a slice of bytes representing an AliasDeniedMessage
+// which can be sent through a connection
 func (ms *AliasDeniedMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)
