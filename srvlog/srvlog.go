@@ -17,12 +17,18 @@ var (
 	//log queue
 	logChan = make(chan logItem, 1024)
 
-	//colour stuff
+	//colour functions
 	startupColourFunc = ansi.ColorFunc("green+b:black")
+	fatalColourFunc   = ansi.ColorFunc("red+b:black")
+	generalColourFunc = ansi.ColorFunc("blue+b:black")
+	warningColourFunc = ansi.ColorFunc("yellow+b:black")
 )
 
 const (
 	startupColour int = iota
+	fatalColour
+	generalColour
+	warningColour
 )
 
 func Init(consolLog, fileLog bool, pathToFile string) {
@@ -40,6 +46,33 @@ func Startup(args ...interface{}) {
 		longTime:         true,
 		preset:           "STARTUP:",
 		presetColourFunc: startupColour,
+		content:          stringFromArgs(args...),
+	}
+}
+
+func Fatal(args ...interface{}) {
+	logChan <- logItem{
+		longTime:         false,
+		preset:           "FATAL:",
+		presetColourFunc: fatalColour,
+		content:          stringFromArgs(args...),
+	}
+}
+
+func General(args ...interface{}) {
+	logChan <- logItem{
+		longTime:         false,
+		preset:           "GENERAL:",
+		presetColourFunc: generalColour,
+		content:          stringFromArgs(args...),
+	}
+}
+
+func Warning(args ...interface{}) {
+	logChan <- logItem{
+		longTime:         false,
+		preset:           "WARNING:",
+		presetColourFunc: warningColour,
 		content:          stringFromArgs(args...),
 	}
 }
@@ -68,6 +101,9 @@ func listen() {
 		case item := <-logChan:
 			writeToConsole(item)
 			writeToFile(item)
+			if item.presetColourFunc == fatalColour {
+				os.Exit(1)
+			}
 		}
 	}
 }
@@ -97,6 +133,12 @@ func colourInText(text string, colourFunc int) string {
 	switch colourFunc {
 	case startupColour:
 		return startupColourFunc(text)
+	case fatalColour:
+		return fatalColourFunc(text)
+	case generalColour:
+		return generalColourFunc(text)
+	case warningColour:
+		return warningColourFunc(text)
 	default:
 		return text
 	}
