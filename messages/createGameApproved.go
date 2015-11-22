@@ -5,12 +5,14 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/srvlog"
 )
 
+// CreateGameApprovedMessage is a structure representing a CreateGameApprovedMessage
 type CreateGameApprovedMessage struct {
 	MessageType uint8
 	GameID      string
 	GameName    string
 }
 
+// NewCreateGameApprovedMessage returns an instance of CreateGameApprovedMessage from params
 func NewCreateGameApprovedMessage(gameID, gameName string) CreateGameApprovedMessage {
 	return CreateGameApprovedMessage{
 		MessageType: TypeCreateGameApproved,
@@ -19,6 +21,8 @@ func NewCreateGameApprovedMessage(gameID, gameName string) CreateGameApprovedMes
 	}
 }
 
+// NewCreateGameApprovedMessageFromBytes returns an instance of CreateGameApprovedMessage
+// from a slice of bytes
 func NewCreateGameApprovedMessageFromBytes(messageBytes []byte) CreateGameApprovedMessage {
 	message := CreateGameApprovedMessage{}
 	buff := bytes.NewBuffer(messageBytes)
@@ -40,6 +44,8 @@ func NewCreateGameApprovedMessageFromBytes(messageBytes []byte) CreateGameApprov
 	return message
 }
 
+// Bytes returns a slice of bytes representing a CreateGameApprovedMessage
+// which can be sent through a connection
 func (ms *CreateGameApprovedMessage) Bytes() []byte {
 	typeBytes := make([]byte, 1)
 	typeBytes[0] = byte(ms.MessageType)
