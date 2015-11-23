@@ -2,7 +2,7 @@ package messages
 
 import (
 	"bytes"
-	"github.com/canopener/PongPlusPlus-Server/srvlog"
+	"github.com/canopener/serverlog"
 )
 
 // AliasDeniedMessage is the struct which represents an Alias denied message
@@ -26,13 +26,13 @@ func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 	buff := bytes.NewBuffer(messageBytes)
 	typeByte, err := buff.ReadByte()
 	if err != nil {
-		srvlog.Fatal("AliasDenied ", err)
+		serverlog.Fatal("AliasDenied ", err)
 	}
 
 	message.MessageType = uint8(typeByte)
 	message.Reason, err = buff.ReadString(NullTerm)
 	if err != nil {
-		srvlog.Fatal("AliasDenied ", err)
+		serverlog.Fatal("AliasDenied ", err)
 	}
 
 	return message
