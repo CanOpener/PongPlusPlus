@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	serverlog.Init(true, true, "/home/mladen/Desktop/ppps.log")
+	serverlog.Init(true, true, 7, "/home/mladen/Desktop/")
 	serverlog.Startup("Server listening on localhost:3000")
 	listener, err := net.Listen("tcp", "localhost:3000")
 	if err != nil {
