@@ -6,9 +6,9 @@ import (
 	"net"
 )
 
-// AllConnections is the slice of all connections on the server
+// AllConnections is the map of all connections on the server
 // at any given time
-var AllConnections = make([]*Connection, 0, 100)
+var AllConnections = make(map[Connection]bool)
 
 // Connection is the structure that defines a connection to the server
 type Connection struct {
@@ -35,7 +35,7 @@ type Connection struct {
 // NewConnection returns an instance of connection.
 // It automatically starts the reader and writer listeners
 func NewConnection(conn net.Conn) *Connection {
-	newConn := &Connection{
+	newConn := Connection{
 		Registered:        false,
 		Alias:             uuid.NewV4().String(),
 		IncommingMessages: make(chan []byte, 100),
@@ -44,31 +44,21 @@ func NewConnection(conn net.Conn) *Connection {
 		infoChan:          make(chan uint8, 1),
 		Socket:            conn,
 	}
-
 	serverlog.General("New connection Created: ", newConn.Alias)
-	AddConnection(newConn)
+
+	AllConnections[newConn] = true
+	serverlog.General("New connection added to list: ", newConn.Alias)
+
 	go newConn.startReader()
 	go newConn.startWriter()
 	go newConn.startInternalInfoInterprater()
-	return newConn
-}
-
-// AddConnection adds a connection to the AllConnections list
-func AddConnection(conn *Connection) {
-	AllConnections = append(AllConnections, conn)
-	serverlog.General("New connection added to list: ", conn.Alias)
+	return &newConn
 }
 
 // RemoveConnection removes a connection from the AllConnections list
 func RemoveConnection(conn *Connection) {
-	var i int
-	for i = 0; i < len(AllConnections); i++ {
-		if AllConnections[i].Alias == conn.Alias {
-			serverlog.General("Removing conn: ", conn.Alias, " from connection list")
-			AllConnections = append(AllConnections[:i], AllConnections[i+1:]...)
-			return
-		}
-	}
+	serverlog.General("Removing connection from list: ", conn.Alias)
+	delete(AllConnections, *conn)
 }
 
 // startInternalInfoInterprater listens for critical internal information
