@@ -1,2 +1,2 @@
-default: game
-	g++ -g -Wall -std=c++11 -pthread game.cpp -o game
+default:
+	g++ -g -Wall -std=c++14 -pthread game.cpp -o game

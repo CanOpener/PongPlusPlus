@@ -2,18 +2,16 @@
 #include <thread>
 #include <mutex>
 #include <deque>
+#include <string>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
-#include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <time>
-#include <arpa/inet.h>
+//#include <errno.h>
+//#include <arpa/inet.h>
 using namespace std;
 
 typedef unsigned char BYTE;
@@ -48,16 +46,16 @@ void listener(int sockfd) {
     BYTE recvBuff[buffSize];
     memset(recvBuff, '0' ,buffSize);
 
-    while ((n = read(sockfd, recvBuff, buffSize-1) > 0) {
-        BYTE* data = new BYTE[n];
-        memcpy(data, recvBuff, n);
+    while ((size = read(sockfd, recvBuff, buffSize-1)) > 0) {
+        BYTE* data = new BYTE[size];
+        memcpy(data, recvBuff, size);
         add(data);
     }
     exit(1);
 }
 
 // connect connects to the Unix domain socket and returns the sockedfd
-int connect(string USDAddr) {
+int connect(string UDSaddr) {
     int sockfd = 0;
     struct sockaddr_un serv_addr;
 
@@ -96,7 +94,7 @@ struct serverMessage {
 
 // union of server message struct and an array of bytes
 union messageDecode {
-    Byte* bytes;
+    BYTE* bytes;
     serverMessage result;
 };
 
@@ -120,6 +118,7 @@ gameState updatePlayerPositions(gameState gs) {
                 ugs.player2_position = srvMsg.result.newPosition;
             }
         }
+        delete[] data;
         queue.pop_front();
     }
     return ugs;
@@ -162,7 +161,7 @@ int main(int argc, char const *argv[]) {
     lis.detach();
 
     auto begin = clock();
-    int gameResult = gameLoop(sockfd);
+    int gameResult = gameLoop(sockfd, tickRate);
     auto seconds = int(double(clock() - begin) / CLOCKS_PER_SEC);
 
     // return results to server
