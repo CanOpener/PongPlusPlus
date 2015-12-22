@@ -1,4 +1,5 @@
 #include <iostream>
+#include <thread>
 #include <mutex>
 #include <deque>
 #include <sys/socket.h>
@@ -31,7 +32,7 @@ deque<BYTE*> getAll() {
     return ret;
 }
 
-// Listener
+// listener listens for messages from the main server
 void listener(string UDSaddr) {
     int sockfd = 0, size = 0;
     const int buffSize = 1400;
@@ -60,6 +61,22 @@ void listener(string UDSaddr) {
     exit(1);
 }
 
-int main() {
-    cout << "Hello World!" << endl;
+int main(int argc, char const *argv[]) {
+    string USDAddr;
+    int TickRate;
+    if (argc != 3) {
+        cout << "Usage: " << argv[0] << " <UDS Address> <Tick Rate>\n";
+        return 1;
+    }
+    USDAddr = argv[1];
+    TickRate = argv[2];
+    if (TickRate < 0) {
+        cout << "Tick rate must be above 0.\n";
+        return 1;
+    }
+
+    thread lis(listener, USDAddr);
+    lis.detach();
+
+    return 0;
 }
