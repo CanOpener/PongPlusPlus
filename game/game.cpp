@@ -10,8 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-//#include <errno.h>
-//#include <arpa/inet.h>
+#include <chrono>
 using namespace std;
 
 typedef unsigned char BYTE;
@@ -81,6 +80,8 @@ struct gameState {
     int round;
     int player1_position;
     int player2_position;
+    int player1_score;
+    int player2_score;
     int ballX;
     int ballY;
 };
@@ -124,26 +125,36 @@ gameState updatePlayerPositions(gameState gs) {
     return ugs;
 }
 
+/*gameState updateBallPosition(gameState gs) {
+    static int ballXvelocity = 0;
+    static int ballYvelocity = 0;
+}*/
+
 // gameLoop runs the game
 int gameLoop(int sockfd, int tickRate) {
     if (tickRate < 0) {
         cout << "Tick rate must be above 0.\n";
         exit(1);
     }
+    const auto mspt = 1000/tickRate;
 
     gameState gs;
-    gs.round = 1;
-    gs.player1_position = gs.player2_position =
-        (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
-    gs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
-    gs.ballY = (BOARD_HEIGHT/2) - (BALL_LENGTH/2);
+    gs.round            = 1;
+    gs.player1_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
+    gs.player2_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
+    gs.player1_score    = gs.player2_score = 0;
+    gs.ballX            = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
+    gs.ballY            = (BOARD_HEIGHT/2) - (BALL_LENGTH/2);
 
     // simple game loop for now
-    // will optimise
-    while(true) {
+    // will optimise later
+    auto begin = clock();
+    while (true) {
+        begin = clock();
         gs = updatePlayerPositions(gs);
         // TODO: update ball position
-        // TODO: send gamestate to server
+        write(sockfd, &gs, sizeof(gameState));
+        this_thread::sleep_for(chrono::milliseconds((clock() - begin) - (CLOCKS_PER_SEC / 1000)));
     }
     return 1;
 }
