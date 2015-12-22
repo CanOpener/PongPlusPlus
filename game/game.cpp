@@ -16,7 +16,7 @@
 #include <arpa/inet.h>
 using namespace std;
 
-typedef unsigned char BYTE
+typedef unsigned char BYTE;
 
 const int BOARD_LENGTH     = 750;
 const int BOARD_HEIGHT     = 500;
@@ -46,7 +46,7 @@ void listener(int sockfd) {
     int size = 0;
     const int buffSize = 1400;
     BYTE recvBuff[buffSize];
-    memset(recvBuff, '0' ,sizeof(recvBuff));
+    memset(recvBuff, '0' ,buffSize);
 
     while ((n = read(sockfd, recvBuff, buffSize-1) > 0) {
         BYTE* data = new BYTE[n];
