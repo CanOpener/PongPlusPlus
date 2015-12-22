@@ -166,13 +166,14 @@ Sent to the Server when a client wishes to leave a game.
 ---
 
 ## Gameplay Messages
-A game is composed of 2 players and a ball. The game board is 500 units in height and 750 units in length. Each player has a height of 125 units and no width and moves only vertically. Each player is placed 10 units before the edge of their side of the game board. The ball is 25x25 units. As the ball moves if the player moves into it's way the ball bounces off the player and starts heading towards the other players side. if the player does not get in it's way and the ball moves off through their side of the board, the other player wins that round. Each game has 10 rounds.
+A game is composed of 2 players and a ball. The game board is 500 units in height and 750 units in length. Each player has a height of 125 units and no width and moves only vertically. Each player is placed 30 units before the edge of their side of the game board. The ball is 25x25 units. As the ball moves if the player moves into it's way the ball bounces off the player and starts heading towards the other players side. if the player does not get in it's way and the ball moves off through their side of the board, the other player wins that round. Each game has 10 rounds.
 
 player positions are relative to the bottom unit of the player. i.e if the player position is 0 :
 he is at the bottom of the game board. and if the player position is 375 he is at the top of the game
 board (375 + 125 = 500)
 
-ball position = mathematical graph positions (x and y)
+ball position Y is in the same manner as the player position.
+ball position X is from the left of the screen i.e. ball position 0 is leftmost position and 725 is rightmost position.
 
 ---
 

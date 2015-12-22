@@ -18,6 +18,14 @@ using namespace std;
 
 typedef unsigned char BYTE
 
+const int BOARD_LENGTH     = 750;
+const int BOARD_HEIGHT     = 500;
+const int PLAYER_HEIGHT    = 125;
+const int PLAYER1_X        = 30;
+const int PLAYER2_X        = 720;
+const int BALL_LENGTH      = 25;
+const int NUMBER_OF_ROUNDS = 10;
+
 // Thread safe queuing
 mutex queMu;
 deque<BYTE*> callQueue;
@@ -48,6 +56,7 @@ void listener(int sockfd) {
     exit(1);
 }
 
+// connect connects to the Unix domain socket and returns the sockedfd
 int connect(string USDAddr) {
     int sockfd = 0;
     struct sockaddr_un serv_addr;
@@ -69,33 +78,39 @@ int connect(string USDAddr) {
     return sockfd;
 }
 
-int gameLoop(int sockfd) {
+
+// gameLoop runs the game
+int gameLoop(int sockfd, int tickRate) {
+    if (tickRate < 0) {
+        cout << "Tick rate must be above 0.\n";
+        exit(1);
+    }
+
+    // simple game loop for now
+    // will optimise
+    while(true) {
+        // TODO: update player positions
+        // TODO: update ball position
+        // TODO: send gamestate to server
+    }
     return 1;
 }
 
 int main(int argc, char const *argv[]) {
-    string USDAddr; // location of unix domain socket
-    int TickRate;   // number of times game loop executes each second
     if (argc != 3) {
         cout << "Usage: " << argv[0] << " <UDS Address> <Tick Rate>\n";
         return 1;
     }
-    USDAddr  = argv[1];
-    TickRate = argv[2];
-
-    if (TickRate < 0) {
-        cout << "Tick rate must be above 0.\n";
-        return 1;
-    }
-
-    int sockfd = connect(USDAddr);
+    string USDAddr = argv[1];
+    int tickRate   = atoi(argv[2]);
+    int sockfd     = connect(USDAddr);
 
     thread lis(listener, sockfd);
     lis.detach();
 
     auto begin = clock();
     int gameResult = gameLoop(sockfd);
-    auto end = clock();
+    auto seconds = int(double(clock() - begin) / CLOCKS_PER_SEC);
 
     // return results to server
     return 0;
