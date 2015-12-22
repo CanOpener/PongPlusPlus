@@ -18,29 +18,40 @@ using namespace std;
 typedef unsigned char BYTE
 
 // Thread safe queuing
-mutex mu;
+mutex queMu;
 deque<BYTE*> callQueue;
 
 void add(BYTE* bytes) {
-    lock_guard<mutex> locker(mu);
+    lock_guard<mutex> locker(queMu);
     callQueue.push_back(bytes);
 }
 deque<BYTE*> getAll() {
-    lock_guard<mutex> locker(mu);
+    lock_guard<mutex> locker(queMu);
     deque<BYTE*> ret = callQueue; // deep copy
     callQueue.clear();
     return ret;
 }
 
 // listener listens for messages from the main server
-void listener(string UDSaddr) {
-    int sockfd = 0, size = 0;
+void listener(int sockfd) {
+    int size = 0;
     const int buffSize = 1400;
     BYTE recvBuff[buffSize];
+    memset(recvBuff, '0' ,sizeof(recvBuff));
+
+    while ((n = read(sockfd, recvBuff, buffSize-1) > 0) {
+        BYTE* data = new BYTE[n];
+        memcpy(data, recvBuff, n);
+        add(data);
+    }
+    exit(1);
+}
+
+int connect(string USDAddr) {
+    int sockfd = 0;
     struct sockaddr_un serv_addr;
 
-    memset(recvBuff, '0' ,sizeof(recvBuff));
-    if ((sockfd = socket(AF_UNIX, SOCK_, 0))< 0) {
+    if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0))< 0) {
         cout << "Could not create socket\n";
         exit(1);
     }
@@ -53,12 +64,8 @@ void listener(string UDSaddr) {
         cout << "Connection Failed\n";
         exit(1);
     }
-    while ((n = read(sockfd, recvBuff, buffSize-1) > 0) {
-        BYTE* data = new BYTE[n];
-        memcpy(data, recvBuff, n);
-        add(data);
-    }
-    exit(1);
+
+    return sockfd;
 }
 
 int main(int argc, char const *argv[]) {
@@ -75,7 +82,9 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    thread lis(listener, USDAddr);
+    int sockfd = connect(USDAddr);
+
+    thread lis(listener, sockfd);
     lis.detach();
 
     return 0;
