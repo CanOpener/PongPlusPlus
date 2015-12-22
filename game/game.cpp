@@ -125,10 +125,50 @@ gameState updatePlayerPositions(gameState gs) {
     return ugs;
 }
 
-/*gameState updateBallPosition(gameState gs) {
+bool ballPlayerAligned(int playerY, int ballY) {
+    return (ballY > (playerY-BALL_LENGTH) && ballY < (playerY + PLAYER_HEIGHT));
+}
+
+bool ballPastPlayer(int ballx) {
+    return (ballx < PLAYER1_X || ballx+BALL_LENGTH > PLAYER2_X);
+}
+
+// absolutely basic. will be upgraded when
+// integration with main server is figured out
+gameState updateBallPosition(gameState gs) {
     static int ballXvelocity = 0;
-    static int ballYvelocity = 0;
-}*/
+    auto ugs = gs;
+
+    // new round
+    if (ballXvelocity == 0) {
+        ballXvelocity = -2;
+    }
+
+    if (ballPastPlayer(ugs.ballX + ballXvelocity)) {
+        if (ballXvelocity < 0) {
+            if (ballPlayerAligned(ugs.player1_position, ugs.ballY) {
+                ballXvelocity *= -1;
+            } else {
+                ugs.round++;
+                ugs.player2_score++;
+                ugs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
+                ballXvelocity = 0;
+            }
+        } else {
+            if (ballPlayerAligned(ugs.player2_position, ugs.ballY) {
+                ballXvelocity *= -1;
+            } else {
+                ugs.round++;
+                ugs.player1_score++;
+                ugs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
+                ballXvelocity = 0;
+            }
+        }
+    }
+    ugs.ballX += ballXvelocity;
+
+    return ugs;
+}
 
 // gameLoop runs the game
 int gameLoop(int sockfd, int tickRate) {
@@ -152,7 +192,7 @@ int gameLoop(int sockfd, int tickRate) {
     while (true) {
         begin = clock();
         gs = updatePlayerPositions(gs);
-        // TODO: update ball position
+        gs = updateBallPosition(gs);
         write(sockfd, &gs, sizeof(gameState));
         this_thread::sleep_for(chrono::milliseconds((clock() - begin) - (CLOCKS_PER_SEC / 1000)));
     }
