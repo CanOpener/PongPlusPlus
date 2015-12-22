@@ -78,6 +78,52 @@ int connect(string USDAddr) {
     return sockfd;
 }
 
+// structure containing the game state
+struct gameState {
+    int round;
+    int player1_position;
+    int player2_position;
+    int ballX;
+    int ballY;
+};
+
+// structure containing a server message
+struct serverMessage {
+    int type;
+    bool player1;
+    int newPosition;
+};
+
+// union of server message struct and an array of bytes
+union messageDecode {
+    Byte* bytes;
+    serverMessage result;
+};
+
+// updatePlayerPositions looks at the call queue and
+// updates player positions
+gameState updatePlayerPositions(gameState gs) {
+    auto queue = getAll();
+    auto ugs = gs;
+    while (!queue.empty()) {
+        auto data = queue.front();
+        messageDecode srvMsg;
+        srvMsg.bytes = data;
+        if (srvMsg.result.type != 1) {
+            cout << "received " << srvMsg.result.type << " type message from server\n";
+            exit(1);
+        }
+        if (srvMsg.result.newPosition <= (BOARD_HEIGHT - PLAYER_HEIGHT) && srvMsg.result.newPosition >= 0) {
+            if (srvMsg.result.player1) {
+                ugs.player1_position = srvMsg.result.newPosition;
+            } else {
+                ugs.player2_position = srvMsg.result.newPosition;
+            }
+        }
+        queue.pop_front();
+    }
+    return ugs;
+}
 
 // gameLoop runs the game
 int gameLoop(int sockfd, int tickRate) {
@@ -86,10 +132,17 @@ int gameLoop(int sockfd, int tickRate) {
         exit(1);
     }
 
+    gameState gs;
+    gs.round = 1;
+    gs.player1_position = gs.player2_position =
+        (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
+    gs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
+    gs.ballY = (BOARD_HEIGHT/2) - (BALL_LENGTH/2);
+
     // simple game loop for now
     // will optimise
     while(true) {
-        // TODO: update player positions
+        gs = updatePlayerPositions(gs);
         // TODO: update ball position
         // TODO: send gamestate to server
     }
