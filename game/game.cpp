@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time>
 #include <arpa/inet.h>
 using namespace std;
 
@@ -68,15 +69,20 @@ int connect(string USDAddr) {
     return sockfd;
 }
 
+int gameLoop(int sockfd) {
+    return 1;
+}
+
 int main(int argc, char const *argv[]) {
-    string USDAddr;
-    int TickRate;
+    string USDAddr; // location of unix domain socket
+    int TickRate;   // number of times game loop executes each second
     if (argc != 3) {
         cout << "Usage: " << argv[0] << " <UDS Address> <Tick Rate>\n";
         return 1;
     }
-    USDAddr = argv[1];
+    USDAddr  = argv[1];
     TickRate = argv[2];
+
     if (TickRate < 0) {
         cout << "Tick rate must be above 0.\n";
         return 1;
@@ -87,5 +93,10 @@ int main(int argc, char const *argv[]) {
     thread lis(listener, sockfd);
     lis.detach();
 
+    auto begin = clock();
+    int gameResult = gameLoop(sockfd);
+    auto end = clock();
+
+    // return results to server
     return 0;
 }
