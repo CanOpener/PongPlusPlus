@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/canopener/PongPlusPlus-Server/connection"
+	"github.com/canopener/PongPlusPlus-Server/server/connection"
 	"github.com/canopener/serverlog"
 	"net"
 	"os"
