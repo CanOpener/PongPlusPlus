@@ -15,6 +15,7 @@ using namespace std;
 
 typedef unsigned char BYTE;
 
+// constants
 const int BOARD_LENGTH     = 750;
 const int BOARD_HEIGHT     = 500;
 const int PLAYER_HEIGHT    = 125;
@@ -22,6 +23,41 @@ const int PLAYER1_X        = 30;
 const int PLAYER2_X        = 720;
 const int BALL_LENGTH      = 25;
 const int NUMBER_OF_ROUNDS = 10;
+
+// structure containing the game state
+struct gameState {
+    uint8_t messageType;
+    uint8_t current_Round;
+    uint8_t player_1_score;
+    uint8_t player_2_score;
+    uint16_t player_1_position;
+    uint16_t player_2_position;
+    uint16_t ballX;
+    uint16_t ballY;
+};
+
+// structure containing a server message
+struct serverMessage {
+    uint8_t type;
+    bool player1;
+    uint16_t newPosition;
+};
+
+// structure containing a finished message
+// sent to the server when the game is about to terminate
+struct finishedMessage {
+    uint8_t messageType;
+    bool p1Won;
+    uint8_t rounds;
+    uint8_t player_1_Score;
+    uint8_t player_2_Score;
+};
+
+// union of server message struct and an array of bytes
+union messageDecode {
+    BYTE* bytes;
+    serverMessage result;
+};
 
 // Thread safe queuing
 mutex queMu;
@@ -44,6 +80,10 @@ void listener(int sockfd) {
     const int buffSize = 1400;
     BYTE recvBuff[buffSize];
     memset(recvBuff, '0' ,buffSize);
+
+    // send ready message
+    uint8_t ready = 1;
+    write(sockfd, &ready, sizeof(uint8_t));
 
     while ((size = read(sockfd, recvBuff, buffSize-1)) > 0) {
         BYTE* data = new BYTE[size];
@@ -75,56 +115,6 @@ int connect(string UDSaddr) {
     return sockfd;
 }
 
-// structure containing the game state
-struct gameState {
-    int round;
-    int player1_position;
-    int player2_position;
-    int player1_score;
-    int player2_score;
-    int ballX;
-    int ballY;
-};
-
-// structure containing a server message
-struct serverMessage {
-    int type;
-    bool player1;
-    int newPosition;
-};
-
-// union of server message struct and an array of bytes
-union messageDecode {
-    BYTE* bytes;
-    serverMessage result;
-};
-
-// updatePlayerPositions looks at the call queue and
-// updates player positions
-gameState updatePlayerPositions(gameState gs) {
-    auto queue = getAll();
-    auto ugs = gs;
-    while (!queue.empty()) {
-        auto data = queue.front();
-        messageDecode srvMsg;
-        srvMsg.bytes = data;
-        if (srvMsg.result.type != 1) {
-            cout << "received " << srvMsg.result.type << " type message from server\n";
-            exit(1);
-        }
-        if (srvMsg.result.newPosition <= (BOARD_HEIGHT - PLAYER_HEIGHT) && srvMsg.result.newPosition >= 0) {
-            if (srvMsg.result.player1) {
-                ugs.player1_position = srvMsg.result.newPosition;
-            } else {
-                ugs.player2_position = srvMsg.result.newPosition;
-            }
-        }
-        delete[] data;
-        queue.pop_front();
-    }
-    return ugs;
-}
-
 bool ballPlayerAligned(int playerY, int ballY) {
     return (ballY > (playerY-BALL_LENGTH) && ballY < (playerY + PLAYER_HEIGHT));
 }
@@ -135,38 +125,96 @@ bool ballPastPlayer(int ballx) {
 
 // absolutely basic. will be upgraded when
 // integration with main server is figured out
-gameState updateBallPosition(gameState gs) {
-    static int ballXvelocity = 0;
+gameState updateBallPosition(gameState gs, int sockfd) {
+    static auto ballXvelocity = 0;
+    static auto before        = clock();
+    static auto waitTime      = 5;
+
+    auto now = clock();
     auto ugs = gs;
+
+    if ((now - before) < waitTime * CLOCKS_PER_SEC) {
+        return ugs;
+    }
+    before   = now;
+    waitTime = 0;
 
     // new round
     if (ballXvelocity == 0) {
-        ballXvelocity = -2;
+        ((ugs.player_1_score > ugs.player_1_score) ? ballXvelocity = -2 : ballXvelocity = 2);
     }
 
     if (ballPastPlayer(ugs.ballX + ballXvelocity)) {
         if (ballXvelocity < 0) {
-            if (ballPlayerAligned(ugs.player1_position, ugs.ballY) {
+            if (ballPlayerAligned(ugs.player_1_position, ugs.ballY)) {
                 ballXvelocity *= -1;
             } else {
-                ugs.round++;
-                ugs.player2_score++;
+                ugs.current_Round++;
+                ugs.player_2_score++;
                 ugs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
                 ballXvelocity = 0;
+                waitTime = 3;
             }
         } else {
-            if (ballPlayerAligned(ugs.player2_position, ugs.ballY) {
+            if (ballPlayerAligned(ugs.player_2_position, ugs.ballY)) {
                 ballXvelocity *= -1;
             } else {
-                ugs.round++;
-                ugs.player1_score++;
+                ugs.current_Round++;
+                ugs.player_1_score++;
                 ugs.ballX = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
                 ballXvelocity = 0;
+                waitTime = 3;
             }
         }
     }
+
     ugs.ballX += ballXvelocity;
 
+    if (ugs.current_Round >= 10) {
+        finishedMessage fin;
+        fin.messageType = 3;
+        fin.rounds = ugs.current_Round;
+        fin.p1Won = (ugs.player_1_score > ugs.player_2_score);
+        fin.player_1_Score = ugs.player_1_score;
+        fin.player_2_Score = ugs.player_2_score;
+        write(sockfd, &fin, sizeof(finishedMessage));
+        exit(1);
+    }
+
+    return ugs;
+}
+
+// updatePlayerPositions looks at the call queue and
+// updates player positions
+gameState updatePlayerPositions(gameState gs, int sockfd) {
+    auto queue = getAll();
+    auto ugs = gs;
+    while (!queue.empty()) {
+        auto data = queue.front();
+        messageDecode srvMsg;
+        srvMsg.bytes = data;
+        if (srvMsg.result.type != 1) {
+            // someone disconnected. automatically disqualified.
+            finishedMessage fin;
+            fin.messageType = 3;
+            fin.p1Won = !srvMsg.result.player1; // if p1 left, p1 lost
+            fin.rounds = ugs.current_Round;
+            fin.player_1_Score = ugs.player_1_score;
+            fin.player_2_Score = ugs.player_2_score;
+            delete[] data;
+            write(sockfd, &fin, sizeof(finishedMessage));
+            exit(1);
+        }
+        if (srvMsg.result.newPosition <= (BOARD_HEIGHT - PLAYER_HEIGHT) && srvMsg.result.newPosition >= 0) {
+            if (srvMsg.result.player1) {
+                ugs.player_1_position = srvMsg.result.newPosition;
+            } else {
+                ugs.player_2_position = srvMsg.result.newPosition;
+            }
+        }
+        delete[] data;
+        queue.pop_front();
+    }
     return ugs;
 }
 
@@ -176,23 +224,23 @@ int gameLoop(int sockfd, int tickRate) {
         cout << "Tick rate must be above 0.\n";
         exit(1);
     }
-    const auto mspt = 1000/tickRate;
 
     gameState gs;
-    gs.round            = 1;
-    gs.player1_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
-    gs.player2_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
-    gs.player1_score    = gs.player2_score = 0;
-    gs.ballX            = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
-    gs.ballY            = (BOARD_HEIGHT/2) - (BALL_LENGTH/2);
+    gs.messageType       = 12;
+    gs.current_Round     = 1;
+    gs.player_1_score    = gs.player_2_score = 0;
+    gs.player_1_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
+    gs.player_2_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);
+    gs.ballX             = (BOARD_LENGTH/2) - (BALL_LENGTH/2);
+    gs.ballY             = (BOARD_HEIGHT/2) - (BALL_LENGTH/2);
 
     // simple game loop for now
     // will optimise later
     auto begin = clock();
     while (true) {
         begin = clock();
-        gs = updatePlayerPositions(gs);
-        gs = updateBallPosition(gs);
+        gs = updatePlayerPositions(gs, sockfd);
+        gs = updateBallPosition(gs, sockfd);
         write(sockfd, &gs, sizeof(gameState));
         this_thread::sleep_for(chrono::milliseconds((clock() - begin) - (CLOCKS_PER_SEC / 1000)));
     }
@@ -211,10 +259,7 @@ int main(int argc, char const *argv[]) {
     thread lis(listener, sockfd);
     lis.detach();
 
-    auto begin = clock();
-    int gameResult = gameLoop(sockfd, tickRate);
-    auto seconds = int(double(clock() - begin) / CLOCKS_PER_SEC);
+    gameLoop(sockfd, tickRate);
 
-    // return results to server
     return 0;
 }
