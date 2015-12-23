@@ -206,9 +206,13 @@ Message sent from the server to the clients in a game 60 times a second telling 
 #### Payload
 ```
 1 byte      : uint      : Message type
-2 bytes     : uint      : other player position (relative to the bottom unit of the player)
-2 bytes     : uint      : ball x position (relative to left of ball)
-2 bytes     : uint      : ball y position (relative to bottom of ball)
+1 byte      : uint      : Current_Round
+1 byte      : uint      : Player_1_Score
+1 byte      : uint      : Player_2_Score
+2 byte      : uint      : Player_1_Position
+2 byte      : uint      : Player_2_Position
+2 byte      : uint      : Ball_X_Coordinate
+2 byte      : uint      : Ball_Y_Coordinate
 ```
 
 ---
