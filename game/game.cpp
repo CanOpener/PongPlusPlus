@@ -204,9 +204,9 @@ int main(int argc, char const *argv[]) {
         cout << "Usage: " << argv[0] << " <UDS Address> <Tick Rate>\n";
         return 1;
     }
-    string USDAddr = argv[1];
+    string UDSaddr = argv[1];
     int tickRate   = atoi(argv[2]);
-    int sockfd     = connect(USDAddr);
+    int sockfd     = connect(UDSaddr);
 
     thread lis(listener, sockfd);
     lis.detach();

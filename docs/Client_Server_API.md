@@ -1,4 +1,4 @@
-# API
+# Client Server API v0.2
 Client server communication will be done through TCP
 
 ## Virtual Messages
