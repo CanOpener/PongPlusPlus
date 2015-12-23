@@ -55,9 +55,22 @@ This is the last message sent by the game to the server. It means that the game 
 ```
 ---
 
-### Someone Disconnected
+### Movement
 #### Server --> Game
 #### Message type: 4
+#### Description
+This message tells the game that a player has moved and gives his position.
+#### Payload
+```
+1 byte      : uint      : Message type
+1 Byte      : bool      : player_1_Moved
+2 bytes     : uint      : new_Position
+```
+---
+
+### Someone Disconnected
+#### Server --> Game
+#### Message type: 5
 #### Description
 This message tells the game that a player has left the game. This will cause the game to terminate after a **Finished** message.
 #### Payload
