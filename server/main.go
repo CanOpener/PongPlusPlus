@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"github.com/canopener/PongPlusPlus-Server/server/messagehandle"
 	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
 	"net"
@@ -52,7 +53,9 @@ func routeMessages(conn *connection.Connection) {
 			mType := uint8(message[0])
 			switch mType {
 			case messages.TypeRequestAlias:
-				// TODO: route message
+				messagehandle.RequestAlias(messages.NewRequestAliasMessageFromBytes(message),
+					conn, registeredConnections, unRegisteredConnections)
+
 			case messages.TypeRequestGameList:
 				// TODO: route message
 			case messages.TypeCreateGame:
