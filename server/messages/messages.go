@@ -14,7 +14,6 @@ const (
 	TypeLeaveGame
 	TypeStartGame
 	TypeStateUpdate
-	TypeRoundUpdate
 	TypeGameOver
 	TypeMove
 )

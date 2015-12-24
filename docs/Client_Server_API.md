@@ -217,26 +217,9 @@ Message sent from the server to the clients in a game 60 times a second telling 
 
 ---
 
-### Round Update
-#### Server --> Client
-#### Message type: 13
-#### Description
-Sent to the players when the round is over. The ball position is given in this one because the ball resets when the round is over. There may be a second of waiting time
-before the ball begins moving again to give players time to recover.
-#### Payload
-```
-1 byte      : uint      : Message type
-1 bytes     : uint      : your score
-1 bytes     : uint      : other player score
-2 bytes     : uint      : ball x position (relative to left of ball)
-2 bytes     : uint      : ball y position (relative to bottom of ball)
-```
-
----
-
 ### Game Over
 #### Server --> Client
-#### Message type: 14
+#### Message type: 13
 #### Description
 Sent to the players when the game has finished.
 #### Payload
@@ -251,7 +234,7 @@ Sent to the players when the game has finished.
 
 ### Move
 #### Client --> Server
-#### Message type: 15
+#### Message type: 14
 #### Description
 When a player is changing his position this message is called.
 #### Payload
