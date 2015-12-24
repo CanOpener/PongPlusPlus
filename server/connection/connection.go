@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"github.com/canopener/PongPlusPlus-Server/server/router"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
 	"net"
@@ -23,13 +22,10 @@ type Connection struct {
 	// outgoingMessages is the channel which the Writer listens to so
 	// it can send messages to the connection
 	outgoingMessages chan []byte
-	// writerKill is the channel used to kill the writer. If the writer
-	// receives anything through this connection it terminates itself
-	writerKill chan bool
+	// kill is the channel used to kill the writer and router.
+	kill chan bool
 	// infoChan is the internal communications channel
 	infoChan chan uint8
-	// router is the router object that listens for messages and interprates them
-	rout router.Router
 	// Socket is the net.Connection object
 	// the core of the struct
 	Socket net.Conn
@@ -43,28 +39,30 @@ func NewConnection(conn net.Conn) *Connection {
 		Alias:             uuid.NewV4().String(),
 		IncommingMessages: make(chan []byte, 100),
 		outgoingMessages:  make(chan []byte, 100),
-		writerKill:        make(chan bool, 1),
+		kill:              make(chan bool, 1),
 		infoChan:          make(chan uint8, 1),
-		rout:              nil,
 		Socket:            conn,
 	}
-	newConn.rout = router.NewRouter(&newCnn)
 	serverlog.General("New connection Created: ", newConn.Alias)
+	AddConnection(&newConn)
 
-	AllConnections[newConn.Alias] = &newConn
-	serverlog.General("New connection added to list: ", newConn.Alias)
-
-	go newConn.rout.Listen()
+	go newConn.startRouter()
 	go newConn.startReader()
 	go newConn.startWriter()
 	go newConn.startInternalInfoInterprater()
 	return &newConn
 }
 
+// AddConnection adds a connection to the AllConnections list
+func AddConnection(conn *Connection) {
+	AllConnections[conn.Alias] = conn
+	serverlog.General("New connection added to list: ", conn.Alias)
+}
+
 // RemoveConnection removes a connection from the AllConnections list
 func RemoveConnection(conn *Connection) {
 	serverlog.General("Removing connection from list: ", conn.Alias)
-	delete(AllConnections, *conn.Alias)
+	delete(AllConnections, conn.Alias)
 }
 
 // startInternalInfoInterprater listens for critical internal information
@@ -77,15 +75,14 @@ func (conn *Connection) startInternalInfoInterprater() {
 			case 0:
 				//Disconnected and Reader finished
 				serverlog.General("conn: ", conn.Alias, " info channel received message: 0")
-				conn.killRouter()
-				conn.killWriter()
+				conn.killWriterRouter()
 				RemoveConnection(conn)
 				return
 			case 1:
 				//Writer killed
 				serverlog.General("conn: ", conn.Alias, " info channel received message: 1")
 				conn.Socket.Close() // close socket and kill Reader
-				conn.killRouter()
+				conn.killWriterRouter()
 				RemoveConnection(conn)
 				return
 			}
@@ -93,6 +90,7 @@ func (conn *Connection) startInternalInfoInterprater() {
 	}
 }
 
-func (conn *Connection) killRouter() {
-	conn.rout.Kill()
+// killWriter kills the startWriter and startRouter functions
+func (conn *Connection) killWriterRouter() {
+	conn.kill <- false
 }

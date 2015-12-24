@@ -35,17 +35,6 @@ func main() {
 		if err != nil {
 			serverlog.Fatal(err)
 		}
-		conn := connection.NewConnection(socket)
-		go listenMessage(conn)
-	}
-}
-
-func listenMessage(conn *connection.Connection) {
-	for {
-		select {
-		case message := <-conn.IncommingMessages:
-			serverlog.General("New message: ", string(message))
-			conn.Write(message)
-		}
+		connection.NewConnection(socket)
 	}
 }
