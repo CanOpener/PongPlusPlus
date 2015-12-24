@@ -9,6 +9,9 @@ import (
 	"strconv"
 )
 
+var unRegisteredConnections = make(map[string]*connection.Connection)
+var registeredConnections = make(map[string]*connection.Connection)
+
 func main() {
 	help := flag.Bool("h", false, "Display this help message")
 	consoleLog := flag.Bool("C", false, "Allow logging to the console, default wont log")
@@ -35,6 +38,8 @@ func main() {
 		if err != nil {
 			serverlog.Fatal(err)
 		}
-		connection.NewConnection(socket)
+		conn := connection.NewConnection(socket)
+		unRegisteredConnections[conn.Alias] = conn
+		conn.StartRoutines()
 	}
 }
