@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
 	"net"
 	"os"
@@ -41,5 +42,36 @@ func main() {
 		conn := connection.NewConnection(socket)
 		unRegisteredConnections[conn.Alias] = conn
 		conn.StartRoutines()
+	}
+}
+
+func routeMessages(conn *connection.Connection) {
+	for {
+		select {
+		case message := <-conn.IncommingMessages:
+			mType := uint8(message[0])
+			switch mType {
+			case messages.TypeRequestAlias:
+				// TODO: route message
+			case messages.TypeRequestGameList:
+				// TODO: route message
+			case messages.TypeCreateGame:
+				// TODO: route message
+			case messages.TypeJoinGame:
+				// TODO: route message
+			case messages.TypeLeaveGame:
+				// TODO: route message
+			case messages.TypeMove:
+				// TODO: route message
+			default:
+				serverlog.General("Router for conn:", conn.Alias, "Killed")
+				if conn.Registered {
+					delete(registeredConnections, conn.Alias)
+				} else {
+					delete(unRegisteredConnections, conn.Alias)
+				}
+				return
+			}
+		}
 	}
 }
