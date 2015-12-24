@@ -53,6 +53,7 @@ func (conn *Connection) startInternalInfoInterprater() {
 				serverlog.General("conn: ", conn.Alias, " info channel received message: 0")
 				conn.killWriter()
 				return
+
 			case 1:
 				//Writer killed
 				serverlog.General("conn: ", conn.Alias, " info channel received message: 1")
@@ -61,4 +62,19 @@ func (conn *Connection) startInternalInfoInterprater() {
 			}
 		}
 	}
+}
+
+// StartRoutines starts the reader and writer for a connection
+func (conn *Connection) StartRoutines() {
+	serverlog.General("Starting routines for conn: ", conn.Alias)
+	go conn.startInternalInfoInterprater()
+	go conn.startWriter()
+	go conn.startReader()
+}
+
+// KillAll kills the reader and writer for a connection
+func (conn *Connection) KillAll() {
+	serverlog.General("Killing all routines for conn: ", conn.Alias)
+	conn.killWriter()
+	conn.Socket.Close()
 }
