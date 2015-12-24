@@ -17,7 +17,8 @@ func (conn *Connection) startWriter() {
 			binary.LittleEndian.PutUint16(lengthBytes, length)
 			messageToWrite := append(lengthBytes, messageBytes...)
 			conn.Socket.Write(messageToWrite)
-		case <-conn.kill:
+
+		case <-conn.writerKill:
 			serverlog.General("Writer killed for conn: ", conn.Alias)
 			conn.infoChan <- 1
 			return
@@ -28,4 +29,9 @@ func (conn *Connection) startWriter() {
 // write tells the writer to write something to the connection
 func (conn *Connection) Write(message []byte) {
 	conn.outgoingMessages <- message
+}
+
+// killWriter kills the writer
+func (conn *Connection) killWriter() {
+	conn.writerKill <- false
 }
