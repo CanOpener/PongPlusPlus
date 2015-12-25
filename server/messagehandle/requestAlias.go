@@ -9,6 +9,8 @@ import (
 // RequestAlias handles the situation when a client sends a RequestAlias message
 func RequestAlias(message messages.RequestAliasMessage, conn *connection.Connection,
 	r map[string]*connection.Connection, u map[string]*connection.Connection) {
+	serverlog.General("Received RequestAlias message from conn:", conn.Alias)
+
 	if conn.Registered {
 		serverlog.General("conn:", conn.Alias, "attempted to request new alias:", message.Alias)
 		denied := messages.NewAliasDeniedMessage("Already registered with alias: " + conn.Alias)

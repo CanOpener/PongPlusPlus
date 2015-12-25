@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"github.com/canopener/PongPlusPlus-Server/server/games"
 	"github.com/canopener/PongPlusPlus-Server/server/messagehandle"
 	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
@@ -13,6 +14,7 @@ import (
 
 var unRegisteredConnections = make(map[string]*connection.Connection)
 var registeredConnections = make(map[string]*connection.Connection)
+var allGames = make(map[string]*games.Game)
 
 func main() {
 	help := flag.Bool("h", false, "Display this help message")
@@ -66,12 +68,18 @@ func routeMessages(conn *connection.Connection) {
 				// TODO: route message
 			case messages.TypeMove:
 				// TODO: route message
-			default:
+			case 200:
 				serverlog.General("Router for conn:", conn.Alias, "Killed")
 				if conn.Registered {
 					delete(registeredConnections, conn.Alias)
 				} else {
 					delete(unRegisteredConnections, conn.Alias)
+				}
+
+				if conn.InGame && !conn.Game.Ready {
+					serverlog.General("Deleting Game:", conn.Game.Name)
+					conn.Game.Kill()
+					delete(allGames, conn.Game.ID)
 				}
 				return
 			}
