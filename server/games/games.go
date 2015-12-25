@@ -1,8 +1,9 @@
 package games
 
 import (
+	"encoding/binary"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
-	//"github.com/canopener/PongPlusPlus-Server/server/messages"
+	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
 	"time"
@@ -56,4 +57,21 @@ func (g *Game) Kill() {
 	if g.Ready {
 		g.Player2.InGame = false
 	}
+}
+
+// Bytes returns an API friendly binary representation of the game object
+// which can be sent to clients.
+func (g *Game) Bytes() []byte {
+	serverlog.General("Getting byte version of game:", g.Name)
+	ubts := make([]byte, 4)
+	unix := uint32(g.InitTime.Unix())
+	binary.LittleEndian.PutUint32(ubts, unix)
+	gid := append([]byte(g.ID), messages.NullTerm)
+	gname := append([]byte(g.Name), messages.NullTerm)
+	pname := append([]byte(g.Initiator.Alias), messages.NullTerm)
+
+	ret := append(ubts, gid...)
+	ret = append(ret, gname...)
+	ret = append(ret, pname...)
+	return ret
 }

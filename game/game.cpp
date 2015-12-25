@@ -226,7 +226,7 @@ int gameLoop(int sockfd, int tickRate) {
     }
 
     gameState gs;
-    gs.messageType       = 12;
+    gs.messageType       = 13; // API
     gs.current_Round     = 1;
     gs.player_1_score    = gs.player_2_score = 0;
     gs.player_1_position = (BOARD_HEIGHT/2) - (PLAYER_HEIGHT/2);

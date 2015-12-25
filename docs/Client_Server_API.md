@@ -92,8 +92,8 @@ This message is sent to a client to give it the updated list of open games. This
 // depending on the number of open games.
 4 bytes     : int       : Unix timestamp of when the game was created
 var bytes   : string    : Game id, a unique identifier for a game.
+var bytes   : string    : Game name (game creator picks this).
 var bytes   : string    : Alias of the user who created the game.
-var bytes   : string    : Game name (game creator picks this)
 ```
 
 ---
