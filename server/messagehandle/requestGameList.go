@@ -7,8 +7,8 @@ import (
 	"github.com/canopener/serverlog"
 )
 
-// CreateGame handles the case where a player sends a CreateGame message
-func CreateGame(conn *connection.Connection, allGames map[string]*games.Game, message messages.RequestGameListMessage) {
+// RequestGameList handles the case where a player sends a RequestGameList message
+func RequestGameList(conn *connection.Connection, allGames map[string]*games.Game, message messages.RequestGameListMessage) {
 	serverlog.General("Received RequestGameList message from conn:", conn.Alias)
 
 	if !conn.Registered {
