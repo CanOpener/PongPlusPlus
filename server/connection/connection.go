@@ -1,7 +1,6 @@
 package connection
 
 import (
-	"github.com/canopener/PongPlusPlus-Server/server/games"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
 	"net"
@@ -16,8 +15,8 @@ type Connection struct {
 	// InGame is true if the player is currently in a
 	// game, either lobby or actually playing
 	InGame bool
-	// Game is a pointer to the game ovbject the player is in if he is in one
-	Game *games.Game
+	// GameID is the ID of the game the player is in
+	GameID string
 	// IncommingMessages is the channel through wich messages from the
 	// connection come in
 	IncommingMessages chan []byte
@@ -40,7 +39,7 @@ func NewConnection(conn net.Conn) *Connection {
 		Registered:        false,
 		Alias:             uuid.NewV4().String(),
 		InGame:            false,
-		Game:              nil,
+		GameID:            "",
 		IncommingMessages: make(chan []byte, 100),
 		outgoingMessages:  make(chan []byte, 100),
 		writerKill:        make(chan bool, 1),

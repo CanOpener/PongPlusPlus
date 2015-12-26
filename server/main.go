@@ -59,15 +59,21 @@ func routeMessages(conn *connection.Connection) {
 					conn, registeredConnections, unRegisteredConnections)
 
 			case messages.TypeRequestGameList:
-				// TODO: route message
+				messagehandle.RequestGameList(conn, allGames,
+					messages.NewRequestGameListMessageFromBytes(message))
+
 			case messages.TypeCreateGame:
-				// TODO: route message
+				messagehandle.CreateGame(conn, allGames,
+					messages.NewCreateGameMessageFromBytes(message))
+
 			case messages.TypeJoinGame:
-				// TODO: route message
+				messagehandle.JoinGame(conn, allGames,
+					messages.NewJoinGameMessageFromBytes(message))
+
 			case messages.TypeLeaveGame:
-				// TODO: route message
-			case messages.TypeMove:
-				// TODO: route message
+				messagehandle.LeaveGame(conn, allGames,
+					messages.NewLeaveGameMessageFromBytes(message))
+
 			case 200:
 				serverlog.General("Router for conn:", conn.Alias, "Killed")
 				if conn.Registered {
@@ -76,10 +82,11 @@ func routeMessages(conn *connection.Connection) {
 					delete(unRegisteredConnections, conn.Alias)
 				}
 
-				if conn.InGame && !conn.Game.Ready {
-					serverlog.General("Deleting Game:", conn.Game.Name)
-					conn.Game.Kill()
-					delete(allGames, conn.Game.ID)
+				if conn.InGame && !allGames[conn.GameID].Ready {
+					g := allGames[conn.GameID]
+					serverlog.General("Deleting Game:", g.Name)
+					g.Kill()
+					delete(allGames, g.ID)
 				}
 				return
 			}

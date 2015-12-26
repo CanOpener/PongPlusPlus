@@ -19,7 +19,7 @@ func CreateGame(conn *connection.Connection, allGames map[string]*games.Game, me
 	}
 
 	if conn.InGame {
-		serverlog.General("conn:", conn.Alias, " tried to create a new game but is already in game:", conn.InGameID)
+		serverlog.General("conn:", conn.Alias, " tried to create a new game but is already in game:", allGames[conn.GameID].Name)
 		denied := messages.NewCreateGameDeniedMessage(message.GameName, "You are already in a game")
 		conn.Write(denied.Bytes())
 		return
@@ -29,7 +29,7 @@ func CreateGame(conn *connection.Connection, allGames map[string]*games.Game, me
 	game := games.NewGame(conn, message.GameName)
 	serverlog.General("conn:", conn.Alias, "setting InGame to true and Game to the game:", game.Name)
 	conn.InGame = true
-	conn.Game = game
+	conn.GameID = game.ID
 	serverlog.General("Attatching game:", game.Name, "to games list")
 	allGames[game.ID] = game
 

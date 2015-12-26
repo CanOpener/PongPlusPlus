@@ -13,8 +13,6 @@ func RequestGameList(conn *connection.Connection, allGames map[string]*games.Gam
 
 	if !conn.Registered {
 		serverlog.General("Unregistered conn:", conn.Alias, "called RequestGameList")
-		denied := messages.NewCreateGameDeniedMessage(message.GameName, "You are not registered")
-		conn.Write(denied.Bytes())
 		return
 	}
 

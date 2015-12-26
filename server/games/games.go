@@ -3,7 +3,6 @@ package games
 import (
 	"encoding/binary"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
-	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
 	"time"
@@ -66,9 +65,9 @@ func (g *Game) Bytes() []byte {
 	ubts := make([]byte, 4)
 	unix := uint32(g.InitTime.Unix())
 	binary.LittleEndian.PutUint32(ubts, unix)
-	gid := append([]byte(g.ID), messages.NullTerm)
-	gname := append([]byte(g.Name), messages.NullTerm)
-	pname := append([]byte(g.Initiator.Alias), messages.NullTerm)
+	gid := append([]byte(g.ID), byte('\000'))
+	gname := append([]byte(g.Name), byte('\000'))
+	pname := append([]byte(g.Initiator.Alias), byte('\000'))
 
 	ret := append(ubts, gid...)
 	ret = append(ret, gname...)
