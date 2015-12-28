@@ -18,10 +18,10 @@ var allGames = make(map[string]*games.Game)
 
 func main() {
 	help := flag.Bool("h", false, "Display this help message")
-	consoleLog := flag.Bool("C", false, "Allow logging to the console, default wont log")
-	fileLog := flag.String("L", "", "Specify directory for logging logfiles, default wont log")
-	logcount := flag.Int("N", -1, "Specify maximum logfiles in directory, default no limit")
-	portno := flag.Int("PORT", 3000, "Specify the port on which the server should listen, default 3000")
+	consoleLog := flag.Bool("c", false, "Print logs to the consol. default: won't log")
+	fileLog := flag.String("log", "", "Specify the directory in which to store logfiles, default: won't store logfiles")
+	logcount := flag.Int("n", -1, "Specify maximum logfiles in directory, default no limit")
+	portno := flag.Int("port", 3000, "Specify the port on which the server should listen, default 3000")
 	flag.Parse()
 
 	if *help {

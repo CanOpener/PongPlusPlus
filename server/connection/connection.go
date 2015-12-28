@@ -8,6 +8,7 @@ import (
 
 // Connection is the structure that defines a connection to the server
 type Connection struct {
+	ID string
 	// Registerd is true if the connection has received its alias
 	Registered bool
 	// Alias is the alias of the connection
@@ -23,10 +24,6 @@ type Connection struct {
 	// outgoingMessages is the channel which the Writer listens to so
 	// it can send messages to the connection
 	outgoingMessages chan []byte
-	// kill is the channel used to kill the writer and router.
-	writerKill chan bool
-	// infoChan is the internal communications channel
-	infoChan chan uint8
 	// Socket is the net.Connection object
 	// the core of the struct
 	Socket net.Conn
@@ -36,52 +33,31 @@ type Connection struct {
 // It automatically starts the reader and writer listeners
 func NewConnection(conn net.Conn) *Connection {
 	return &Connection{
+		ID:                uuid.NewV4().String(),
 		Registered:        false,
-		Alias:             uuid.NewV4().String(),
+		Alias:             "",
 		InGame:            false,
 		GameID:            "",
 		IncommingMessages: make(chan []byte, 100),
 		outgoingMessages:  make(chan []byte, 100),
-		writerKill:        make(chan bool, 1),
-		infoChan:          make(chan uint8, 1),
 		Socket:            conn,
 	}
 }
 
-// startInternalInfoInterprater listens for critical internal information
-// about the connection.
-func (conn *Connection) startInternalInfoInterprater() {
-	for {
-		select {
-		case info := <-conn.infoChan:
-			switch info {
-			case 0:
-				//Disconnected and Reader finished
-				serverlog.General("conn: ", conn.Alias, " info channel received message: 0")
-				conn.killWriter()
-				return
-
-			case 1:
-				//Writer killed
-				serverlog.General("conn: ", conn.Alias, " info channel received message: 1")
-				conn.Socket.Close() // close socket and kill Reader
-				return
-			}
-		}
-	}
-}
-
-// StartRoutines starts the reader and writer for a connection
-func (conn *Connection) StartRoutines() {
+// Open starts the reader and writer for a connection
+func (conn *Connection) Open() {
 	serverlog.General("Starting routines for conn: ", conn.Alias)
-	go conn.startInternalInfoInterprater()
 	go conn.startWriter()
 	go conn.startReader()
 }
 
-// KillAll kills the reader and writer for a connection
-func (conn *Connection) KillAll() {
-	serverlog.General("Killing all routines for conn: ", conn.Alias)
-	conn.killWriter()
+// Close kills the reader and writer and closes the TCP connection
+func (conn *Connection) Close() {
+	serverlog.General("Close called on Conn:", conn.Alias)
+	serverlog.General("Closing net.conn socket for Conn:", conn.Alias)
 	conn.Socket.Close()
+	serverlog.General("Closing OutgoingMessages channel for Conn:", conn.Alias)
+	close(conn.IncommingMessages)
+	serverlog.General("Closing IncomingMessages channel for Conn:", conn.Alias)
+	close(conn.IncommingMessages)
 }

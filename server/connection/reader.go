@@ -8,53 +8,48 @@ import (
 
 // startReader starts the connection reader
 func (conn *Connection) startReader() {
+	serverlog.General("Reader started for Conn:", conn.Alias)
 	var messageBuffer bytes.Buffer
 	var bytesToRead int
-	serverlog.General("Reader started for conn: ", conn.Alias)
 
 	for {
 		buf := make([]byte, 1400)
-
 		dataSize, err := conn.Socket.Read(buf)
-		serverlog.General(conn.Alias, " Reader received message: ", dataSize, " bytes")
 		if err != nil {
-			serverlog.General("Reader Terminated for conn: ", conn.Alias)
-			// informing of temination through IncomingMessages
-			termBts := make([]byte, 1, 1)
-			termBts[0] = byte(uint8(200))
-			conn.IncommingMessages <- termBts
-
-			conn.infoChan <- 0
+			serverlog.General("TCP connection closed for Conn:", conn.Alias)
+			serverlog.General("Reader closing net.conn socket for Conn:", conn.Alias)
+			conn.Socket.Close()
+			serverlog.General("Reader closing OutgoingMessages channel for Conn:", conn.Alias)
+			close(conn.IncommingMessages)
+			serverlog.General("Reader closing IncomingMessages channel for Conn:", conn.Alias)
+			close(conn.IncommingMessages)
 			return
 		}
+		serverlog.General("Conn:", conn.Alias, "Reader received message:", dataSize, "bytes")
+
 		data := buf[0:dataSize]
 		messageBuffer.Write(data)
 
-		if messageBuffer.Len() >= bytesToRead {
-			for {
-				if bytesToRead != 0 {
-					message := make([]byte, bytesToRead)
-					_, err := messageBuffer.Read(message)
-					if err != nil {
-						serverlog.Fatal(err)
-					}
-					conn.IncommingMessages <- message
-					bytesToRead = 0
+		for messageBuffer.Len() > 1 {
+			if bytesToRead == 0 {
+				btrBuffer := make([]byte, 2)
+				_, err := messageBuffer.Read(btrBuffer)
+				if err != nil {
+					serverlog.Fatal("Error happened in reader bts:2 for Conn:", conn.Alias, "Error:", err)
+					serverlog.Fatal(err)
 				}
-
-				if bytesToRead == 0 && messageBuffer.Len() > 2 {
-					btrBuffer := make([]byte, 2)
-					_, err := messageBuffer.Read(btrBuffer)
-					if err != nil {
-						serverlog.Fatal(err)
-					}
-
-					bytesToRead = int(binary.LittleEndian.Uint16(btrBuffer))
+				bytesToRead = int(binary.LittleEndian.Uint16(btrBuffer))
+			}
+			if messageBuffer.Len() >= bytesToRead {
+				message := make([]byte, bytesToRead)
+				_, err := messageBuffer.Read(message)
+				if err != nil {
+					serverlog.Fatal("Error happened in reader bts:var for Conn:", conn.Alias, "Error:", err)
 				}
-
-				if bytesToRead == 0 || (messageBuffer.Len() < bytesToRead) {
-					break
-				}
+				conn.IncommingMessages <- message
+				bytesToRead = 0
+			} else {
+				break
 			}
 		}
 	}
