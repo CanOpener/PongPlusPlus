@@ -11,6 +11,7 @@ const (
 	TypeCreateGameApproved
 	TypeCreateGameDenied
 	TypeJoinGame
+	TypeJoinGameDenied
 	TypeLeaveGame
 	TypeStartGame
 	TypeStateUpdate
@@ -22,8 +23,3 @@ const (
 	// NullTerm represents a null terminator byte for comparrison reasons
 	NullTerm byte = byte('\000')
 )
-
-// GetMessageType returns the message type from a slice of bytes
-func GetMessageType(message []byte) uint8 {
-	return uint8(message[0])
-}
