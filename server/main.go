@@ -12,8 +12,8 @@ import (
 	"strconv"
 )
 
-var unRegisteredConnections = make(map[string]*connection.Connection)
-var registeredConnections = make(map[string]*connection.Connection)
+var allConnections = make(map[string]*connection.Conn)
+var takenAliases = make(map[string]bool)
 var allGames = make(map[string]*games.Game)
 
 func main() {
@@ -43,53 +43,54 @@ func main() {
 			serverlog.Fatal(err)
 		}
 		conn := connection.NewConnection(socket)
-		unRegisteredConnections[conn.Alias] = conn
-		conn.StartRoutines()
+		serverlog.General("New Connection", conn.Identification())
+		allConnections[conn.ID] = conn
+		conn.Open()
+		go startRouter(conn)
 	}
 }
 
-func routeMessages(conn *connection.Connection) {
+func startRouter(conn *connection.Conn) {
 	for {
-		select {
-		case message := <-conn.IncommingMessages:
-			mType := uint8(message[0])
-			switch mType {
-			case messages.TypeRequestAlias:
-				messagehandle.RequestAlias(messages.NewRequestAliasMessageFromBytes(message),
-					conn, registeredConnections, unRegisteredConnections)
+		message, more := <-conn.IncommingMessages
+		if !more {
+			serverlog.General("Router killed for", conn.Identification())
+			serverlog.General("Deleting allConnections[", conn.ID, "]")
+			delete(allConnections, conn.ID)
+			conn.KillAll()
+			if conn.Registered {
+				serverlog.General("deleting takenAliases[", conn.Alias, "]")
+				delete(takenAliases, conn.Alias)
+			}
 
-			case messages.TypeRequestGameList:
-				messagehandle.RequestGameList(conn, allGames,
-					messages.NewRequestGameListMessageFromBytes(message))
-
-			case messages.TypeCreateGame:
-				messagehandle.CreateGame(conn, allGames,
-					messages.NewCreateGameMessageFromBytes(message))
-
-			case messages.TypeJoinGame:
-				messagehandle.JoinGame(conn, allGames,
-					messages.NewJoinGameMessageFromBytes(message))
-
-			case messages.TypeLeaveGame:
-				messagehandle.LeaveGame(conn, allGames,
-					messages.NewLeaveGameMessageFromBytes(message))
-
-			case 200:
-				serverlog.General("Router for conn:", conn.Alias, "Killed")
-				if conn.Registered {
-					delete(registeredConnections, conn.Alias)
-				} else {
-					delete(unRegisteredConnections, conn.Alias)
-				}
-
-				if conn.InGame && !allGames[conn.GameID].Ready {
-					g := allGames[conn.GameID]
-					serverlog.General("Deleting Game:", g.Name)
+			if conn.InGame {
+				g := allGames[conn.InGameID]
+				if !g.Ready { // hasnt started. only Initiator in there
+					serverlog.General("Killing", g.Identification())
 					g.Kill()
+					serverlog.General("Deleting allGames[", g.ID, "]")
 					delete(allGames, g.ID)
 				}
-				return
 			}
+			return
+		}
+		mType := uint8(message[0])
+		switch mType {
+		case messages.TypeRequestAlias:
+			messagehandle.RequestAlias(messages.NewRequestAliasMessageFromBytes(message),
+				conn, registeredConnections, unRegisteredConnections)
+		case messages.TypeRequestGameList:
+			messagehandle.RequestGameList(conn, allGames,
+				messages.NewRequestGameListMessageFromBytes(message))
+		case messages.TypeCreateGame:
+			messagehandle.CreateGame(conn, allGames,
+				messages.NewCreateGameMessageFromBytes(message))
+		case messages.TypeJoinGame:
+			messagehandle.JoinGame(conn, allGames,
+				messages.NewJoinGameMessageFromBytes(message))
+		case messages.TypeLeaveGame:
+			messagehandle.LeaveGame(conn, allGames,
+				messages.NewLeaveGameMessageFromBytes(message))
 		}
 	}
 }

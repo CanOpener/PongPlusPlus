@@ -15,9 +15,9 @@ type Game struct {
 	// Name is the name of the game given by the initiator
 	Name string
 	// Initiator is the connection of the player who started the game
-	Initiator *connection.Connection
+	Initiator *connection.Conn
 	// Player2 is the connection of player 2
-	Player2 *connection.Connection
+	Player2 *connection.Conn
 	// InitTime is the time the game object was initiated
 	InitTime time.Time
 	// StartTime is the time the game was started
@@ -27,9 +27,9 @@ type Game struct {
 }
 
 // NewGame returns a pointer to a game instance given two connections
-func NewGame(initiator *connection.Connection, name string) *Game {
+func NewGame(initiator *connection.Conn, name string) *Game {
 	id := uuid.NewV4().String()
-	serverlog.General("Initiating game:", id, "with connection:", initiator.Alias)
+	serverlog.General("Initiating game:", id, "with", initiator.Identification())
 	return &Game{
 		ID:        id,
 		Name:      name,
@@ -40,8 +40,8 @@ func NewGame(initiator *connection.Connection, name string) *Game {
 }
 
 // Start will start the game
-func (g *Game) Start(player2 *connection.Connection) {
-	serverlog.General("Starting game:", g.ID, "with player 2:", player2.Alias)
+func (g *Game) Start(player2 *connection.Conn) {
+	serverlog.General("Starting game:", g.ID, "with player 2", player2.Identification())
 	g.Player2 = player2
 	g.Ready = true
 	// TODO: start unix domain server
@@ -73,4 +73,10 @@ func (g *Game) Bytes() []byte {
 	ret = append(ret, gname...)
 	ret = append(ret, pname...)
 	return ret
+}
+
+// Identification returns a human readable way of differenciating
+// between games
+func (g *Game) Identification() string {
+	return "Game Named: " + g.ID
 }

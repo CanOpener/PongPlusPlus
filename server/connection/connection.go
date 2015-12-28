@@ -6,8 +6,8 @@ import (
 	"net"
 )
 
-// Connection is the structure that defines a connection to the server
-type Connection struct {
+// Conn is the structure that defines a connection to the server
+type Conn struct {
 	ID string
 	// Registerd is true if the connection has received its alias
 	Registered bool
@@ -24,15 +24,15 @@ type Connection struct {
 	// outgoingMessages is the channel which the Writer listens to so
 	// it can send messages to the connection
 	outgoingMessages chan []byte
-	// Socket is the net.Connection object
+	// Socket is the net.Conn object
 	// the core of the struct
 	Socket net.Conn
 }
 
 // NewConnection returns an instance of connection.
 // It automatically starts the reader and writer listeners
-func NewConnection(conn net.Conn) *Connection {
-	return &Connection{
+func NewConnection(conn net.Conn) *Conn {
+	return &Conn{
 		ID:                uuid.NewV4().String(),
 		Registered:        false,
 		Alias:             "",
@@ -45,19 +45,28 @@ func NewConnection(conn net.Conn) *Connection {
 }
 
 // Open starts the reader and writer for a connection
-func (conn *Connection) Open() {
-	serverlog.General("Starting routines for conn: ", conn.Alias)
+func (conn *Conn) Open() {
+	serverlog.General("Open called on", conn.Identification())
 	go conn.startWriter()
 	go conn.startReader()
 }
 
 // Close kills the reader and writer and closes the TCP connection
-func (conn *Connection) Close() {
-	serverlog.General("Close called on Conn:", conn.Alias)
-	serverlog.General("Closing net.conn socket for Conn:", conn.Alias)
+func (conn *Conn) Close() {
+	serverlog.General("Close called on", conn.Identification())
+	serverlog.General("Closing net.conn socket for", conn.Identification())
 	conn.Socket.Close()
-	serverlog.General("Closing OutgoingMessages channel for Conn:", conn.Alias)
+	serverlog.General("Closing OutgoingMessages channel for", conn.Identification())
 	close(conn.IncommingMessages)
-	serverlog.General("Closing IncomingMessages channel for Conn:", conn.Alias)
+	serverlog.General("Closing IncomingMessages channel for", conn.Identification())
 	close(conn.IncommingMessages)
+}
+
+// Identification returns a prefix string to identify a connection whether by
+// its Alias if it is registered or by it's ID if it isn't
+func (conn *Conn) Identification() string {
+	if conn.Registered {
+		return "Conn Alias: " + conn.Alias
+	}
+	return "Conn ID: " + conn.Alias
 }
