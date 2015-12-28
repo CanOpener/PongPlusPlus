@@ -8,16 +8,16 @@ import (
 )
 
 // LeaveGame handles the case where a player sends a LeaveGame message
-func LeaveGame(conn *connection.Connection, allGames map[string]*games.Game, message messages.LeaveGameMessage) {
-	serverlog.General("Received LeaveGame message from conn:", conn.Alias)
+func LeaveGame(conn *connection.Conn, allGames map[string]*games.Game, message messages.LeaveGameMessage) {
+	serverlog.General("Received LeaveGame message from", conn.Identification())
 
 	if !conn.Registered {
-		serverlog.General("Unregistered conn:", conn.Alias, "called LeaveGame")
+		serverlog.General("Unregistered", conn.Identification(), "called LeaveGame")
 		return
 	}
 
 	if !conn.InGame {
-		serverlog.General("conn:", conn.Alias, "attempted to leave a game but isn't in a game:", allGames[conn.GameID].Name)
+		serverlog.General(conn.Identification(), "attempted to leave a game but isn't in a game:", allGames[conn.GameID].Name)
 		return
 	}
 

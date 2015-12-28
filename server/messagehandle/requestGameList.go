@@ -8,14 +8,15 @@ import (
 )
 
 // RequestGameList handles the case where a player sends a RequestGameList message
-func RequestGameList(conn *connection.Connection, allGames map[string]*games.Game, message messages.RequestGameListMessage) {
-	serverlog.General("Received RequestGameList message from conn:", conn.Alias)
+func RequestGameList(conn *connection.Conn, allGames map[string]*games.Game, message messages.RequestGameListMessage) {
+	serverlog.General("Received RequestGameList message from", conn.Identification())
 
 	if !conn.Registered {
-		serverlog.General("Unregistered conn:", conn.Alias, "called RequestGameList")
+		serverlog.General("Unregistered", conn.Identification(), "called RequestGameList")
 		return
 	}
 
+	serverlog.General("Sending Game list to", conn.Identification())
 	gameList := messages.NewGameListMessage(allGames)
 	conn.Write(gameList.Bytes())
 }

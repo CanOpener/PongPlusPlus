@@ -57,14 +57,14 @@ func startRouter(conn *connection.Conn) {
 			serverlog.General("Router killed for", conn.Identification())
 			serverlog.General("Deleting allConnections[", conn.ID, "]")
 			delete(allConnections, conn.ID)
-			conn.KillAll()
+			conn.Close()
 			if conn.Registered {
 				serverlog.General("deleting takenAliases[", conn.Alias, "]")
 				delete(takenAliases, conn.Alias)
 			}
 
 			if conn.InGame {
-				g := allGames[conn.InGameID]
+				g := allGames[conn.GameID]
 				if !g.Ready { // hasnt started. only Initiator in there
 					serverlog.General("Killing", g.Identification())
 					g.Kill()
@@ -78,7 +78,7 @@ func startRouter(conn *connection.Conn) {
 		switch mType {
 		case messages.TypeRequestAlias:
 			messagehandle.RequestAlias(messages.NewRequestAliasMessageFromBytes(message),
-				conn, registeredConnections, unRegisteredConnections)
+				conn, takenAliases)
 		case messages.TypeRequestGameList:
 			messagehandle.RequestGameList(conn, allGames,
 				messages.NewRequestGameListMessageFromBytes(message))
