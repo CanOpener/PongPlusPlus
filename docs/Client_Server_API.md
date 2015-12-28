@@ -153,9 +153,23 @@ var bytes   : string    : Game id
 
 ---
 
+### Join Game Denied
+#### Server --> Client
+#### Message type: 10
+#### Description
+Sent to the Client when he attempts to join a game either before being registered
+with an alias or if he is in another game.
+#### Payload
+```
+1 byte      : uint      : Message type
+var bytes   : string    : Reason
+```
+
+---
+
 ### Leave Game
 #### Client --> Server
-#### Message type: 10
+#### Message type: 11
 #### Description
 Sent to the Server when a client wishes to leave a game.
 #### Payload
@@ -179,7 +193,7 @@ ball position X is from the left of the screen i.e. ball position 0 is leftmost 
 
 ### Start Game
 #### Server --> Client
-#### Message type: 11
+#### Message type: 12
 #### Description
 When two clients are in a lobby a game can start. The Server sends each client in the game
 a start game message.
@@ -200,7 +214,7 @@ var bytes   : string    : Game name
 
 ### State Update
 #### Server --> Client
-#### Message type: 12
+#### Message type: 13
 #### Description
 Message sent from the server to the clients in a game 60 times a second telling them the status of the objects in the game.
 #### Payload
@@ -219,7 +233,7 @@ Message sent from the server to the clients in a game 60 times a second telling 
 
 ### Game Over
 #### Server --> Client
-#### Message type: 13
+#### Message type: 14
 #### Description
 Sent to the players when the game has finished.
 #### Payload
@@ -234,7 +248,7 @@ Sent to the players when the game has finished.
 
 ### Move
 #### Client --> Server
-#### Message type: 14
+#### Message type: 15
 #### Description
 When a player is changing his position this message is called.
 #### Payload
