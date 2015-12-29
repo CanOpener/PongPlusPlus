@@ -78,5 +78,5 @@ func (g *Game) Bytes() []byte {
 // Identification returns a human readable way of differenciating
 // between games
 func (g *Game) Identification() string {
-	return "Game Named: " + g.ID
+	return "Game Named: " + g.Name
 }

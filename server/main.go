@@ -58,7 +58,6 @@ func startRouter(conn *connection.Conn) {
 			serverlog.General("Router killed for", conn.Identification())
 			serverlog.General("Deleting allConnections[", conn.ID, "]")
 			delete(allConnections, conn.ID)
-			conn.Close()
 			if conn.Registered {
 				serverlog.General("deleting takenAliases[", conn.Alias, "]")
 				delete(takenAliases, conn.Alias)
