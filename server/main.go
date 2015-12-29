@@ -51,6 +51,7 @@ func main() {
 }
 
 func startRouter(conn *connection.Conn) {
+	serverlog.General("Router started for", conn.Identification())
 	for {
 		message, more := <-conn.IncommingMessages
 		if !more {

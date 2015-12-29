@@ -12,10 +12,6 @@ func (conn *Conn) startWriter() {
 		messageBytes, more := <-conn.outgoingMessages
 		if !more {
 			serverlog.General("outgoingMessages killed: Writer closed for", conn.Identification())
-			serverlog.General("Writer closing net.conn socket for", conn.Identification())
-			conn.Socket.Close()
-			serverlog.General("Writer closing IncomingMessages channel for", conn.Identification())
-			close(conn.IncommingMessages)
 			return
 		}
 		serverlog.General(conn.Identification(), " writing message: ", len(messageBytes), " bytes")

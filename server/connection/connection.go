@@ -54,12 +54,7 @@ func (conn *Conn) Open() {
 // Close kills the reader and writer and closes the TCP connection
 func (conn *Conn) Close() {
 	serverlog.General("Close called on", conn.Identification())
-	serverlog.General("Closing net.conn socket for", conn.Identification())
 	conn.Socket.Close()
-	serverlog.General("Closing OutgoingMessages channel for", conn.Identification())
-	close(conn.IncommingMessages)
-	serverlog.General("Closing IncomingMessages channel for", conn.Identification())
-	close(conn.IncommingMessages)
 }
 
 // Identification returns a prefix string to identify a connection whether by
@@ -68,5 +63,5 @@ func (conn *Conn) Identification() string {
 	if conn.Registered {
 		return "Conn Alias: " + conn.Alias
 	}
-	return "Conn ID: " + conn.Alias
+	return "Conn ID: " + conn.ID
 }

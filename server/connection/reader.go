@@ -22,7 +22,7 @@ func (conn *Conn) startReader() {
 			serverlog.General("Reader closing OutgoingMessages channel for", conn.Identification())
 			close(conn.IncommingMessages)
 			serverlog.General("Reader closing IncomingMessages channel for", conn.Identification())
-			close(conn.IncommingMessages)
+			close(conn.outgoingMessages)
 			return
 		}
 		serverlog.General(conn.Identification(), "Reader received message:", dataSize, "bytes")
