@@ -22,9 +22,9 @@ func RequestAlias(message messages.RequestAliasMessage, conn *connection.Conn, a
 		conn.Write(denied.Bytes())
 		return
 	}
-	if len(message.Alias) < 3 {
-		serverlog.General(conn.Identification(), "requested too small alias:", message.Alias)
-		denied := messages.NewAliasDeniedMessage("That alias is too small, 3 characters minimum")
+	if len(message.Alias) < 3 || len(message.Alias) > 10 {
+		serverlog.General(conn.Identification(), "requested too long or too short alias:", message.Alias)
+		denied := messages.NewAliasDeniedMessage("An alias needs to be between 3 and 10 characters long (inclusive)")
 		conn.Write(denied.Bytes())
 		return
 	}

@@ -24,7 +24,7 @@ This Message is sent to the server to inform it that all the game is ready for p
 
 ### Status
 #### Game --> Server
-#### Message type: 12
+#### Message type: 13
 #### Description
 This message contains the current status of the game. This message is to be passed to the players as it contains vital information about the position of the ball and the other player. The frequency of this message is reflected by the **Tick Rate** that the game has been started with. note that player 1 is the player on the left of the board. Note that the message type is the same as the message type of the Server to client message game state update message.
 #### Payload

@@ -5,6 +5,10 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
+	"net"
+	"os"
+	"os/exec"
+	"path"
 	"time"
 )
 
@@ -20,38 +24,42 @@ type Game struct {
 	Player2 *connection.Conn
 	// InitTime is the time the game object was initiated
 	InitTime time.Time
-	// StartTime is the time the game was started
-	BeginTime time.Time
 	// Ready is true if both players are in the game
 	Ready bool
+	// USD is the connection to the Unix domain socket
+	UDS net.Conn
+	// UDSPath is the filesystem path to the unix domain socket
+	UDSPath string
+	// gameMessage is the channel of messages coming in from the game instance
+	gameMessage chan []byte
 }
 
 // NewGame returns a pointer to a game instance given two connections
 func NewGame(initiator *connection.Conn, name string) *Game {
 	id := uuid.NewV4().String()
-	serverlog.General("Initiating game:", id, "with", initiator.Identification())
+	serverlog.General("Initiating Game:", id, "with", initiator.Identification())
 	return &Game{
 		ID:        id,
 		Name:      name,
 		Initiator: initiator,
 		InitTime:  time.Now(),
 		Ready:     false,
+		UDSPath:   path.Join("~", ".pppsrv", "sockets", id+".sock"),
 	}
 }
 
 // Start will start the game
 func (g *Game) Start(player2 *connection.Conn) {
-	serverlog.General("Starting game:", g.ID, "with player 2", player2.Identification())
+	serverlog.General("Starting", g.Identification(), "with player 2", player2.Identification())
 	g.Player2 = player2
 	g.Ready = true
-	// TODO: start unix domain server
-	// TODO: start player message listeners
+	g.startUDS()
 }
 
 // Kill destroys all game related gorutines
 func (g *Game) Kill() {
-	// TODO: kill unix domain socket server
-	// TODO: kill player message listeners
+	serverlog.General("Kill called on", g.Identification(), "closing UDS")
+	g.UDS.Close()
 	g.Initiator.InGame = false
 	if g.Ready {
 		g.Player2.InGame = false
@@ -61,7 +69,7 @@ func (g *Game) Kill() {
 // Bytes returns an API friendly binary representation of the game object
 // which can be sent to clients.
 func (g *Game) Bytes() []byte {
-	serverlog.General("Getting byte version of game:", g.Name)
+	serverlog.General("Getting byte version of", g.Identification())
 	ubts := make([]byte, 4)
 	unix := uint32(g.InitTime.Unix())
 	binary.LittleEndian.PutUint32(ubts, unix)
@@ -78,5 +86,118 @@ func (g *Game) Bytes() []byte {
 // Identification returns a human readable way of differenciating
 // between games
 func (g *Game) Identification() string {
-	return "Game Named: " + g.Name
+	return "Game Named: " + g.Name + " ID: " + g.ID
+}
+
+func (g *Game) startUDS() {
+	serverlog.General("Initiationg gameMessage channel for", g.Identification())
+	g.gameMessage = make(chan []byte, 100)
+	go g.listenGameMessage()
+	g.deleteSocket()
+	g.createSocket()
+	defer g.deleteSocket()
+
+	listener, err := net.Listen("unix", g.UDSPath)
+	if err != nil {
+		serverlog.Fatal("Failed to create listener to unix domain socket:", g.UDSPath)
+	}
+
+	cmd := exec.Command(path.Join("~", ".pppsrv", "game"), g.UDSPath, "60")
+	err = cmd.Start()
+	if err != nil {
+		serverlog.Fatal("Failed to start game instance at:", path.Join("~", ".pppsrv", "game"), "err:", err)
+	}
+
+	g.UDS, err = listener.Accept()
+	if err != nil {
+		serverlog.Fatal("Failed to accept connection for unix domain socket:", g.UDSPath)
+	}
+	serverlog.General("Accepted connection on:", g.UDSPath)
+	for {
+		buffer := make([]byte, 1400)
+		mSize, err := g.UDS.Read(buffer)
+		if err != nil {
+			serverlog.General("Unix domain socket closed for:", g.UDSPath)
+			close(g.gameMessage)
+			break
+		}
+		g.gameMessage <- buffer[:mSize]
+	}
+}
+
+func (g *Game) listenGameMessage() {
+	serverlog.General("listenGameMessage gorutine started for", g.Identification())
+	clientListenerStarted := false
+	clientKill := make(chan bool, 1)
+	for {
+		message, more := <-g.gameMessage
+		if !more {
+			serverlog.General("gameMessage channel closed for", g.Identification(),
+				"so listenGameMessage is sending a kill signal to the client listeners and terminating")
+			clientKill <- true
+			return
+		}
+		if !clientListenerStarted && message[0] == 1 { // ready message sent
+			serverlog.General("Received ready message for", g.Identification(), "so starting clientListeners")
+			go g.listenClientMessage(clientKill)
+			clientListenerStarted = true
+		} else {
+			g.decipherGameMessage(message)
+		}
+	}
+}
+
+func (g *Game) listenClientMessage(kill chan bool) {
+	serverlog.General("listenClientMessage has started for", g.Identification())
+	for {
+		select {
+		case message, more := <-g.Initiator.IncommingMessages:
+			if !more {
+				serverlog.General(g.Initiator.Identification(), "(player 1) has disconnected while in", g.Identification(),
+					"so sending disconnect message to game instance")
+				g.UDS.Write(newDisconnectedMessage(true))
+			} else {
+				g.decipherClientMessage(true, message)
+			}
+		case message, more := <-g.Player2.IncommingMessages:
+			if !more {
+				serverlog.General(g.Initiator.Identification(), "(player 2) has disconnected while in", g.Identification(),
+					"so sending disconnect message to game instance")
+				g.UDS.Write(newDisconnectedMessage(false))
+			} else {
+				g.decipherClientMessage(false, message)
+			}
+		case <-kill:
+			serverlog.General(g.Identification(), "listenClientMessage gorutine received kill signal so terminating")
+			close(kill)
+			return
+		}
+	}
+}
+
+func (g *Game) decipherGameMessage(message []byte) {
+
+}
+
+func (g *Game) decipherClientMessage(player1 bool, message []byte) {
+
+}
+
+func (g *Game) createSocket() {
+	serverlog.General("Creating socket:", g.UDSPath, "for", g.Identification())
+	_, err := os.Create(g.UDSPath)
+	if err != nil {
+		serverlog.Fatal("Failed to create socket:", g.UDSPath, "for", g.Identification(), "err:", err)
+	}
+}
+func (g *Game) deleteSocket() {
+	serverlog.General("Deleting socket:", g.UDSPath, "for", g.Identification())
+	err := os.Remove(g.UDSPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			serverlog.General("socket:", g.UDSPath, "does not exist so can't be deleted")
+		} else {
+			serverlog.Warning("Failed to delete socket:", g.UDSPath, "for", g.Identification(), "err:", err)
+		}
+	}
 }
