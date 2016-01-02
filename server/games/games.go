@@ -99,7 +99,7 @@ func (g *Game) startUDS() {
 
 	listener, err := net.Listen("unix", g.UDSPath)
 	if err != nil {
-		serverlog.Fatal("Failed to create listener to unix domain socket:", g.UDSPath)
+		serverlog.Fatal("Failed to establish listener for Unix domain socket:", g.UDSPath)
 	}
 
 	cmd := exec.Command(path.Join("~", ".pppsrv", "game"), g.UDSPath, "60")
@@ -117,9 +117,9 @@ func (g *Game) startUDS() {
 		buffer := make([]byte, 1400)
 		mSize, err := g.UDS.Read(buffer)
 		if err != nil {
-			serverlog.General("Unix domain socket closed for:", g.UDSPath)
+			serverlog.General("Unix domain socket closed for:", g.Identification(), "so closing gameMessage channel")
 			close(g.gameMessage)
-			break
+			return
 		}
 		g.gameMessage <- buffer[:mSize]
 	}
@@ -141,9 +141,8 @@ func (g *Game) listenGameMessage() {
 			serverlog.General("Received ready message for", g.Identification(), "so starting clientListeners")
 			go g.listenClientMessage(clientKill)
 			clientListenerStarted = true
-		} else {
-			g.decipherGameMessage(message)
 		}
+		g.interpretGameMessage(message)
 	}
 }
 
@@ -157,7 +156,7 @@ func (g *Game) listenClientMessage(kill chan bool) {
 					"so sending disconnect message to game instance")
 				g.UDS.Write(newDisconnectedMessage(true))
 			} else {
-				g.decipherClientMessage(true, message)
+				g.interpretClientMessage(true, message)
 			}
 		case message, more := <-g.Player2.IncommingMessages:
 			if !more {
@@ -165,7 +164,7 @@ func (g *Game) listenClientMessage(kill chan bool) {
 					"so sending disconnect message to game instance")
 				g.UDS.Write(newDisconnectedMessage(false))
 			} else {
-				g.decipherClientMessage(false, message)
+				g.interpretClientMessage(false, message)
 			}
 		case <-kill:
 			serverlog.General(g.Identification(), "listenClientMessage gorutine received kill signal so terminating")
@@ -175,11 +174,11 @@ func (g *Game) listenClientMessage(kill chan bool) {
 	}
 }
 
-func (g *Game) decipherGameMessage(message []byte) {
+func (g *Game) interpretGameMessage(message []byte) {
 
 }
 
-func (g *Game) decipherClientMessage(player1 bool, message []byte) {
+func (g *Game) interpretClientMessage(player1 bool, message []byte) {
 
 }
 
