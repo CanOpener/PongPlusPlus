@@ -1,6 +1,7 @@
 package messages
 
 import (
+	"bytes"
 	"encoding/binary"
 	"github.com/canopener/PongPlusPlus-Server/server/games"
 )
@@ -15,30 +16,30 @@ type GameListMessage struct {
 // NewGameListMessage returns an instance of GameListMessage based on params
 func NewGameListMessage(allgames map[string]*games.Game) GameListMessage {
 	var numGames uint16
-	var gamelist []byte
+	var gamelist bytes.Buffer
 	for _, game := range allgames {
 		if !game.Ready {
 			numGames++
-			gamelist = append(gamelist, game.Bytes()...)
+			gamelist.Write(game.Bytes())
 		}
 	}
 
 	return GameListMessage{
 		MessageType: TypeGameList,
 		NumGames:    numGames,
-		GameList:    gamelist,
+		GameList:    gamelist.Bytes(),
 	}
 }
 
 // Bytes returns a slice of bytes representing a GameListMessage
 // which can be sent through a connection
 func (ms *GameListMessage) Bytes() []byte {
-	messageBytes := make([]byte, 1)
-	messageBytes[0] = byte(ms.MessageType)
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+
 	numBytes := make([]byte, 2)
 	binary.LittleEndian.PutUint16(numBytes, ms.NumGames)
-
-	ret := append(messageBytes, numBytes...)
-	ret = append(ret, ms.GameList...)
-	return ret
+	buf.Write(numBytes)
+	buf.Write(ms.GameList)
+	return buf.Bytes()
 }

@@ -47,12 +47,11 @@ func NewCreateGameDeniedMessageFromBytes(messageBytes []byte) CreateGameDeniedMe
 // Bytes returns a slice of bytes representing an CreateGameDeniedMessage
 // which can be sent through a connection
 func (ms *CreateGameDeniedMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	gameNameBytes := append([]byte(ms.GameName), NullTerm)
-	reasonBytes := append([]byte(ms.Reason), NullTerm)
-
-	message := append(typeBytes, gameNameBytes...)
-	message = append(message, reasonBytes...)
-	return message
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.GameName)
+	buf.WriteByte(NullTerm)
+	buf.WriteString(ms.Reason)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

@@ -41,8 +41,9 @@ func NewCreateGameMessageFromBytes(messageBytes []byte) CreateGameMessage {
 // Bytes returns a slice of bytes representing a CreateGameMessage
 // which can be sent through a connection
 func (ms *CreateGameMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	gameNameBytes := append([]byte(ms.GameName), NullTerm)
-	return append(typeBytes, gameNameBytes...)
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.GameName)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

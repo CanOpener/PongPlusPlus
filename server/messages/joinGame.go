@@ -41,8 +41,9 @@ func NewJoinGameMessageFromBytes(messageBytes []byte) JoinGameMessage {
 // Bytes returns a slice of bytes representing an JoinGameMessage
 // which can be sent through a connection
 func (ms *JoinGameMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	gameIDBytes := append([]byte(ms.GameID), NullTerm)
-	return append(typeBytes, gameIDBytes...)
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.GameID)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

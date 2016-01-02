@@ -1,6 +1,7 @@
 package games
 
 import (
+	"bytes"
 	"encoding/binary"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
 	"github.com/canopener/serverlog"
@@ -70,18 +71,25 @@ func (g *Game) Kill() {
 // which can be sent to clients.
 func (g *Game) Bytes() []byte {
 	serverlog.General("Getting byte version of", g.Identification())
-	ubts := make([]byte, 4)
-	unix := uint32(g.InitTime.Unix())
-	binary.LittleEndian.PutUint32(ubts, unix)
-	gid := append([]byte(g.ID), byte('\000'))
-	gname := append([]byte(g.Name), byte('\000'))
-	pname := append([]byte(g.Initiator.Alias), byte('\000'))
-
-	ret := append(ubts, gid...)
-	ret = append(ret, gname...)
-	ret = append(ret, pname...)
-	return ret
+	var buf bytes.Buffer
+	unixBytes := make([]byte, 4)
+	binary.LittleEndian.PutUint32(unixBytes, uint32(g.InitTime.Unix()))
+	buf.Write(unixBytes)
+	buf.WriteString(g.ID)
+	buf.WriteByte(0)
+	buf.WriteString(g.Name)
+	buf.WriteByte(0)
+	buf.WriteString(g.Initiator.Alias)
+	buf.WriteByte(0)
+	return buf.Bytes()
 }
+
+/*
+4 bytes     : int       : Unix timestamp of when the game was created
+var bytes   : string    : Game id, a unique identifier for a game.
+var bytes   : string    : Game name (game creator picks this).
+var bytes   : string    : Alias of the user who created the game.
+*/
 
 // Identification returns a human readable way of differenciating
 // between games
@@ -175,7 +183,13 @@ func (g *Game) listenClientMessage(kill chan bool) {
 }
 
 func (g *Game) interpretGameMessage(message []byte) {
-
+	switch message[0] {
+	case 1: // ready
+	case 13: // status
+		g.Initiator.Write(message)
+		g.Player2.Write(message)
+	case 3: // finished
+	}
 }
 
 func (g *Game) interpretClientMessage(player1 bool, message []byte) {

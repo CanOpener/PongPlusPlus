@@ -41,9 +41,9 @@ func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 // Bytes returns a slice of bytes representing a RequestAliasMessage
 // which can be sent through a connection
 func (ms *RequestAliasMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	AliasBytes := append([]byte(ms.Alias), NullTerm)
-
-	return append(typeBytes, AliasBytes...)
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.Alias)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

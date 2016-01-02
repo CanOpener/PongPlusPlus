@@ -47,12 +47,11 @@ func NewCreateGameApprovedMessageFromBytes(messageBytes []byte) CreateGameApprov
 // Bytes returns a slice of bytes representing a CreateGameApprovedMessage
 // which can be sent through a connection
 func (ms *CreateGameApprovedMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	gameIDBytes := append([]byte(ms.GameID), NullTerm)
-	gameNameBytes := append([]byte(ms.GameName), NullTerm)
-
-	message := append(typeBytes, gameIDBytes...)
-	message = append(message, gameNameBytes...)
-	return message
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.GameID)
+	buf.WriteByte(NullTerm)
+	buf.WriteString(ms.GameName)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

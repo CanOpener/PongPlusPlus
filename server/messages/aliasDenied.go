@@ -41,8 +41,9 @@ func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 // Bytes returns a slice of bytes representing an AliasDeniedMessage
 // which can be sent through a connection
 func (ms *AliasDeniedMessage) Bytes() []byte {
-	typeBytes := make([]byte, 1)
-	typeBytes[0] = byte(ms.MessageType)
-	ReasonBytes := append([]byte(ms.Reason), NullTerm)
-	return append(typeBytes, ReasonBytes...)
+	var buf bytes.Buffer
+	buf.WriteByte(byte(ms.MessageType))
+	buf.WriteString(ms.Reason)
+	buf.WriteByte(NullTerm)
+	return buf.Bytes()
 }

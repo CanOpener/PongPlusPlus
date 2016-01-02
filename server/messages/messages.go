@@ -21,5 +21,5 @@ const (
 
 const (
 	// NullTerm represents a null terminator byte for comparrison reasons
-	NullTerm byte = byte('\000')
+	NullTerm byte = 0
 )
