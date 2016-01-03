@@ -184,27 +184,29 @@ func (g *Game) listenClientMessage(kill chan bool) {
 func (g *Game) interpretGameMessage(message []byte) {
 	switch message[0] {
 	case 1: // ready
-		g.Initiator.Write(messages.NewStartGameMessage(true,
-			0, 0, 0, 0, g.Player2.Alias, g.ID, g.Name))
-		g.Player2.Write(messages.NewStartGameMessage(false,
-			0, 0, 0, 0, g.Initiator.Alias, g.ID, g.Name))
+		i := messages.NewStartGameMessage(true,
+			0, 0, 0, 0, g.Player2.Alias, g.ID, g.Name)
+		p := messages.NewStartGameMessage(false,
+			0, 0, 0, 0, g.Initiator.Alias, g.ID, g.Name)
+		g.Initiator.Write(i.Bytes())
+		g.Player2.Write(p.Bytes())
 	case 13: // status
 		g.Initiator.Write(message)
 		g.Player2.Write(message)
 	case 3: // finished
 		fin := newFinishedMessage(message)
 		serverlog.General(g.Identification(), "Has finished with status", fin)
-		inMs := messages.newGameOverMessage(fin.p1score, fin.p2score, 0)
-		p2Ms := messages.newGameOverMessage(fin.p2score, fin.p1score, 0)
+		inMs := messages.NewGameOverMessage(fin.p1score, fin.p2score, 0)
+		p2Ms := messages.NewGameOverMessage(fin.p2score, fin.p1score, 0)
 		if fin.p1won {
 			inMs.Status = 0
-			p2MS.Status = 1
+			p2Ms.Status = 1
 		} else {
 			inMs.Status = 1
-			p2MS.Status = 0
+			p2Ms.Status = 0
 		}
 		g.Initiator.Write(inMs.Bytes())
-		g.Player2.Write(p2MS.Bytes())
+		g.Player2.Write(p2Ms.Bytes())
 		g.Kill()
 	}
 }
@@ -215,7 +217,7 @@ func (g *Game) interpretClientMessage(player1 bool, message []byte) {
 		serverlog.General("Someone disconnected from ongoing", g.Identification(), "Telling game instance")
 		g.UDS.Write(newDisconnectedMessage(player1))
 	case messages.TypeMove:
-		mv := messages.newMoveMessageFromBytes(message)
+		mv := messages.NewMoveMessageFromBytes(message)
 		g.UDS.Write(newMovementMessage(player1, mv.Position))
 	}
 }

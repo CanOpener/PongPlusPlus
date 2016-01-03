@@ -1,9 +1,9 @@
-package messages
+package games
 
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/canopener/PongPlusPlus-Server/server/games"
+	"github.com/canopener/PongPlusPlus-Server/server/messages"
 )
 
 // GameListMessage is a structure representing a Game List message
@@ -14,7 +14,7 @@ type GameListMessage struct {
 }
 
 // NewGameListMessage returns an instance of GameListMessage based on params
-func NewGameListMessage(allgames map[string]*games.Game) GameListMessage {
+func NewGameListMessage(allgames map[string]*Game) GameListMessage {
 	var numGames uint16
 	var gamelist bytes.Buffer
 	for _, game := range allgames {
@@ -25,7 +25,7 @@ func NewGameListMessage(allgames map[string]*games.Game) GameListMessage {
 	}
 
 	return GameListMessage{
-		MessageType: TypeGameList,
+		MessageType: messages.TypeGameList,
 		NumGames:    numGames,
 		GameList:    gamelist.Bytes(),
 	}

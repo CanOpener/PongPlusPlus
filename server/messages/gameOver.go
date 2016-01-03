@@ -1,12 +1,5 @@
 package messages
 
-/*
-1 byte      : uint      : Message type
-1 bytes     : uint      : your score
-1 bytes     : uint      : other player score
-1 bytes     : uint      : game state (0 = your victory, 1 = other player's victory, 2 = draw)
-*/
-
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
@@ -60,7 +53,7 @@ func NewGameOverMessageFromBytes(messageBytes []byte) GameOverMessage {
 	}
 	message.Status = uint8(statByte)
 
-	return NewGame
+	return message
 }
 
 // Bytes returns a slice of bytes representing an GameOverMessage

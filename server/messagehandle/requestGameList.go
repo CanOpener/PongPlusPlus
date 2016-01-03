@@ -17,6 +17,6 @@ func RequestGameList(conn *connection.Conn, allGames map[string]*games.Game, mes
 	}
 
 	serverlog.General("Sending Game list to", conn.Identification())
-	gameList := messages.NewGameListMessage(allGames)
+	gameList := games.NewGameListMessage(allGames)
 	conn.Write(gameList.Bytes())
 }

@@ -37,7 +37,7 @@ func JoinGame(conn *connection.Conn, allGames map[string]*games.Game, message me
 	conn.InGame = true
 	conn.GameID = game.ID
 	game.Start(conn)
-	go listenFinished(g, allGames)
+	go listenFinished(game, allGames)
 }
 
 func listenFinished(g *games.Game, allGames map[string]*games.Game) {
