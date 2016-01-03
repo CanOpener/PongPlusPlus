@@ -64,9 +64,9 @@ func (g *Game) Start(player2 *connection.Conn) {
 // Kill destroys all game related gorutines
 func (g *Game) Kill() {
 	serverlog.General("Kill called on", g.Identification(), "closing UDS and sending message through FinChan")
-	g.UDS.Close()
 	g.Initiator.InGame = false
 	if g.Ready {
+		g.UDS.Close()
 		g.Player2.InGame = false
 	}
 	g.FinChan <- true
