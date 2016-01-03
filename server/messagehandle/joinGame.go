@@ -37,4 +37,12 @@ func JoinGame(conn *connection.Conn, allGames map[string]*games.Game, message me
 	conn.InGame = true
 	conn.GameID = game.ID
 	game.Start(conn)
+	go listenFinished(g, allGames)
+}
+
+func listenFinished(g *games.Game, allGames map[string]*games.Game) {
+	<-g.FinChan
+	serverlog.General("Received message through FinChan of", g.Identification(),
+		"Removing it from allGames")
+	delete(allGames, g.ID)
 }

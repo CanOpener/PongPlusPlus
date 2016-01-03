@@ -200,7 +200,7 @@ a start game message.
 #### Payload
 ```
 1 byte      : uint      : Message type
-1 byte      : boolean   : your side of game board (1 = right, 0 = left)
+1 byte      : boolean   : your side of game board (1 = left, 0 = right)
 2 bytes     : uint      : your position (relative to the bottom unit of the player)
 2 bytes     : uint      : other player position (relative to the bottom unit of the player)
 2 bytes     : uint      : ball x position (relative to left of ball)

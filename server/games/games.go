@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"github.com/canopener/PongPlusPlus-Server/server/connection"
+	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
 	"github.com/satori/go.uuid"
 	"net"
@@ -33,6 +34,8 @@ type Game struct {
 	UDSPath string
 	// gameMessage is the channel of messages coming in from the game instance
 	gameMessage chan []byte
+	// FinChan is the channel that will send a message when the game can be deleted
+	FinChan chan bool
 }
 
 // NewGame returns a pointer to a game instance given two connections
@@ -46,6 +49,7 @@ func NewGame(initiator *connection.Conn, name string) *Game {
 		InitTime:  time.Now(),
 		Ready:     false,
 		UDSPath:   path.Join("~", ".pppsrv", "sockets", id+".sock"),
+		FinChan:   make(chan bool, 1),
 	}
 }
 
@@ -59,12 +63,13 @@ func (g *Game) Start(player2 *connection.Conn) {
 
 // Kill destroys all game related gorutines
 func (g *Game) Kill() {
-	serverlog.General("Kill called on", g.Identification(), "closing UDS")
+	serverlog.General("Kill called on", g.Identification(), "closing UDS and sending message through FinChan")
 	g.UDS.Close()
 	g.Initiator.InGame = false
 	if g.Ready {
 		g.Player2.InGame = false
 	}
+	g.FinChan <- true
 }
 
 // Bytes returns an API friendly binary representation of the game object
@@ -84,13 +89,6 @@ func (g *Game) Bytes() []byte {
 	return buf.Bytes()
 }
 
-/*
-4 bytes     : int       : Unix timestamp of when the game was created
-var bytes   : string    : Game id, a unique identifier for a game.
-var bytes   : string    : Game name (game creator picks this).
-var bytes   : string    : Alias of the user who created the game.
-*/
-
 // Identification returns a human readable way of differenciating
 // between games
 func (g *Game) Identification() string {
@@ -104,6 +102,7 @@ func (g *Game) startUDS() {
 	g.deleteSocket()
 	g.createSocket()
 	defer g.deleteSocket()
+	defer g.Kill()
 
 	listener, err := net.Listen("unix", g.UDSPath)
 	if err != nil {
@@ -185,15 +184,40 @@ func (g *Game) listenClientMessage(kill chan bool) {
 func (g *Game) interpretGameMessage(message []byte) {
 	switch message[0] {
 	case 1: // ready
+		g.Initiator.Write(messages.NewStartGameMessage(true,
+			0, 0, 0, 0, g.Player2.Alias, g.ID, g.Name))
+		g.Player2.Write(messages.NewStartGameMessage(false,
+			0, 0, 0, 0, g.Initiator.Alias, g.ID, g.Name))
 	case 13: // status
 		g.Initiator.Write(message)
 		g.Player2.Write(message)
 	case 3: // finished
+		fin := newFinishedMessage(message)
+		serverlog.General(g.Identification(), "Has finished with status", fin)
+		inMs := messages.newGameOverMessage(fin.p1score, fin.p2score, 0)
+		p2Ms := messages.newGameOverMessage(fin.p2score, fin.p1score, 0)
+		if fin.p1won {
+			inMs.Status = 0
+			p2MS.Status = 1
+		} else {
+			inMs.Status = 1
+			p2MS.Status = 0
+		}
+		g.Initiator.Write(inMs.Bytes())
+		g.Player2.Write(p2MS.Bytes())
+		g.Kill()
 	}
 }
 
 func (g *Game) interpretClientMessage(player1 bool, message []byte) {
-
+	switch message[0] {
+	case messages.TypeLeaveGame:
+		serverlog.General("Someone disconnected from ongoing", g.Identification(), "Telling game instance")
+		g.UDS.Write(newDisconnectedMessage(player1))
+	case messages.TypeMove:
+		mv := messages.newMoveMessageFromBytes(message)
+		g.UDS.Write(newMovementMessage(player1, mv.Position))
+	}
 }
 
 func (g *Game) createSocket() {
