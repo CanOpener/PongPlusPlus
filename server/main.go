@@ -7,8 +7,11 @@ import (
 	"github.com/canopener/PongPlusPlus-Server/server/messagehandle"
 	"github.com/canopener/PongPlusPlus-Server/server/messages"
 	"github.com/canopener/serverlog"
+	"log"
 	"net"
 	"os"
+	"os/user"
+	"path"
 	"strconv"
 )
 
@@ -17,11 +20,18 @@ var takenAliases = make(map[string]bool)
 var allGames = make(map[string]*games.Game)
 
 func main() {
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+	deflog := path.Join(usr.HomeDir, ".pppsrv", "logs")
+
 	help := flag.Bool("h", false, "Display this help message")
 	consoleLog := flag.Bool("c", false, "Print logs to the consol. default: won't log")
 	fileLog := flag.String("log", "", "Specify the directory in which to store logfiles, default: won't store logfiles")
 	logcount := flag.Int("n", -1, "Specify maximum logfiles in directory, default no limit")
 	portno := flag.Int("port", 3000, "Specify the port on which the server should listen, default 3000")
+	defLogFlag := flag.Bool("deflog", false, "Will log to default log location: ~/.pppsrv/logs")
 	flag.Parse()
 
 	if *help {
@@ -29,7 +39,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	serverlog.Init(*consoleLog, (*fileLog != ""), *logcount, *fileLog)
+	if !*defLogFlag {
+		serverlog.Init(*consoleLog, (*fileLog != ""), *logcount, *fileLog)
+	} else {
+		serverlog.Init(*consoleLog, true, *logcount, deflog)
+	}
 	serverlog.Startup("Server listening on localhost:", *portno)
 	listener, err := net.Listen("tcp", ":"+strconv.Itoa(*portno))
 	if err != nil {

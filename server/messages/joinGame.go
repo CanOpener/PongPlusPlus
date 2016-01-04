@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // JoinGameMessage is a structure representing a Join game message
@@ -34,6 +35,7 @@ func NewJoinGameMessageFromBytes(messageBytes []byte) JoinGameMessage {
 	if err != nil {
 		serverlog.Fatal("CreateGame ", err)
 	}
+	message.GameID = strings.TrimSuffix(message.GameID, "\x00")
 
 	return message
 }

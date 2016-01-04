@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // JoinGameDeniedMessage is the struct which represents an Alias denied message
@@ -34,6 +35,7 @@ func NewJoinGameDeniedMessageFromBytes(messageBytes []byte) JoinGameDeniedMessag
 	if err != nil {
 		serverlog.Fatal("JoinGameDenied ", err)
 	}
+	message.Reason = strings.TrimSuffix(message.Reason, "\x00")
 
 	return message
 }

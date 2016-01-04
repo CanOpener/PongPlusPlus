@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // AliasDeniedMessage is the struct which represents an Alias denied message
@@ -34,6 +35,7 @@ func NewAliasDeniedMessageFromBytes(messageBytes []byte) AliasDeniedMessage {
 	if err != nil {
 		serverlog.Fatal("AliasDenied ", err)
 	}
+	message.Reason = strings.TrimSuffix(message.Reason, "\x00")
 
 	return message
 }

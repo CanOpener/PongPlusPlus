@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // RequestAliasMessage is a structure representing a Request alias message
@@ -34,6 +35,7 @@ func NewRequestAliasMessageFromBytes(messageBytes []byte) RequestAliasMessage {
 	if err != nil {
 		serverlog.Fatal("RequestAlias", err)
 	}
+	message.Alias = strings.TrimSuffix(message.Alias, "\x00")
 
 	return message
 }

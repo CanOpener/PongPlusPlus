@@ -25,7 +25,6 @@ func (conn *Conn) startReader() {
 			close(conn.outgoingMessages)
 			return
 		}
-		serverlog.General(conn.Identification(), "Reader received message:", dataSize, "bytes")
 
 		data := buf[0:dataSize]
 		messageBuffer.Write(data)

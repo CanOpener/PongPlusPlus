@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // CreateGameMessage is a structure representing a Create game message
@@ -34,6 +35,7 @@ func NewCreateGameMessageFromBytes(messageBytes []byte) CreateGameMessage {
 	if err != nil {
 		serverlog.Fatal("CreateGame ", err)
 	}
+	message.GameName = strings.TrimSuffix(message.GameName, "\x00")
 
 	return message
 }

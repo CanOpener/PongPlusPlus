@@ -14,7 +14,6 @@ func (conn *Conn) startWriter() {
 			serverlog.General("outgoingMessages killed: Writer closed for", conn.Identification())
 			return
 		}
-		serverlog.General(conn.Identification(), " writing message: ", len(messageBytes), " bytes")
 		length := uint16(len(messageBytes))
 		lengthBytes := make([]byte, 2)
 		binary.LittleEndian.PutUint16(lengthBytes, length)

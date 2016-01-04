@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // CreateGameDeniedMessage is a structure representing a Create game denied message
@@ -36,10 +37,13 @@ func NewCreateGameDeniedMessageFromBytes(messageBytes []byte) CreateGameDeniedMe
 	if err != nil {
 		serverlog.Fatal("CreateGameDenied ", err)
 	}
+	message.GameName = strings.TrimSuffix(message.GameName, "\x00")
+
 	message.Reason, err = buff.ReadString(NullTerm)
 	if err != nil {
 		serverlog.Fatal("CreateGameDenied ", err)
 	}
+	message.Reason = strings.TrimSuffix(message.Reason, "\x00")
 
 	return message
 }

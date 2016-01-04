@@ -3,6 +3,7 @@ package messages
 import (
 	"bytes"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // CreateGameApprovedMessage is a structure representing a Create game approved message
@@ -36,10 +37,13 @@ func NewCreateGameApprovedMessageFromBytes(messageBytes []byte) CreateGameApprov
 	if err != nil {
 		serverlog.Fatal("CreateGameApproved ", err)
 	}
+	message.GameID = strings.TrimSuffix(message.GameID, "\x00")
+
 	message.GameName, err = buff.ReadString(NullTerm)
 	if err != nil {
 		serverlog.Fatal("CreateGameApproved ", err)
 	}
+	message.GameName = strings.TrimSuffix(message.GameName, "\x00")
 
 	return message
 }

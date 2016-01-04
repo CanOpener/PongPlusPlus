@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"github.com/canopener/serverlog"
+	"strings"
 )
 
 // StartGameMessage is a structure representing a start game message
@@ -86,6 +87,7 @@ func NewStartGameMessageFromBytes(messageBytes []byte) StartGameMessage {
 		if err != nil {
 			serverlog.Fatal("StartGame ", err)
 		}
+		strs[i] = strings.TrimSuffix(strs[i], "\x00")
 	}
 	message.OtherAlias = strs[0]
 	message.GameID = strs[1]
